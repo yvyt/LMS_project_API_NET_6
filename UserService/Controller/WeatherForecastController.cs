@@ -11,7 +11,7 @@ using UserService.Model;
 namespace UserService.Controller
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [Authorize]
     public class WeatherForecastController : ControllerBase
     {
