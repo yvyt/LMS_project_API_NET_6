@@ -5,7 +5,7 @@ namespace UserService.Service
 {
     public interface IUserService
     {
-        Task<UserManagerRespone> RegisterUserAsync(RegisterUser user);
+        Task<UserManagerRespone> RegisterUserAsync(RegisterUser user,string role);
         Task<UserManagerRespone> LoginAsync(LoginUser user);
     }
     

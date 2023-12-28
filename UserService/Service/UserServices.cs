@@ -11,10 +11,12 @@ namespace UserService.Service
     {
         private UserManager<IdentityUser> _userManager;
         private IConfiguration _config;
-        public UserServices(UserManager<IdentityUser> userManager, IConfiguration config)
+        private RoleManager<IdentityRole> _roleManager;
+        public UserServices(UserManager<IdentityUser> userManager, IConfiguration config, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _config = config;
+            _roleManager = roleManager;
         }
 
         public async Task<UserManagerRespone> LoginAsync(LoginUser user)
@@ -63,7 +65,7 @@ namespace UserService.Service
             };
         }
 
-        public async Task<UserManagerRespone> RegisterUserAsync(RegisterUser user)
+        public async Task<UserManagerRespone> RegisterUserAsync(RegisterUser user,string role)
         {
             if (user == null)
             {
@@ -82,21 +84,39 @@ namespace UserService.Service
                 Email = user.Email,
                 UserName = user.Email,
             };
-            var result = await _userManager.CreateAsync(identityUser, user.Password);
-            if (result.Succeeded)
+            var checkRole= await _roleManager.RoleExistsAsync(role);
+            if (checkRole)
+            {
+                var result = await _userManager.CreateAsync(identityUser, user.Password);
+                
+                if (!result.Succeeded)
+                {
+                    return new UserManagerRespone
+                    {
+                        Message = "User did not create",
+                        IsSuccess = false,
+                        Errors = result.Errors.Select(e => e.Description)
+                    };
+                }
+                // add to role
+                await _userManager.AddToRoleAsync(identityUser, role);
+                return new UserManagerRespone
+                {
+                    Message = "User created successful",
+                    IsSuccess = true,
+                };
+
+            }
+            else
             {
                 return new UserManagerRespone
                 {
-                    Message = "User create successfuly",
-                    IsSuccess = true
+                    Message = "Role doesn't exitst",
+                    IsSuccess = false,
                 };
             }
-            return new UserManagerRespone
-            {
-                Message = "User did not create",
-                IsSuccess = false,
-                Errors = result.Errors.Select(e => e.Description)
-            };
+            
+            
         }
     }
 }

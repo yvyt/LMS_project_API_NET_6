@@ -15,10 +15,10 @@ namespace UserService.Controller
             _userService = userService;
         }
         [HttpPost("Register")]
-        public async Task<IActionResult> RegisterAsync([FromBody] RegisterUser user)
+        public async Task<IActionResult> RegisterAsync([FromBody] RegisterUser user,string role)
         {
             if(ModelState.IsValid) {
-                var result= await _userService.RegisterUserAsync(user);
+                var result= await _userService.RegisterUserAsync(user,role);
                 if(result.IsSuccess)
                 {
                     return Ok(result);
