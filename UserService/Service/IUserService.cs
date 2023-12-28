@@ -7,6 +7,7 @@ namespace UserService.Service
     {
         Task<UserManagerRespone> RegisterUserAsync(RegisterUser user,string role);
         Task<UserManagerRespone> LoginAsync(LoginUser user);
+        UserManagerRespone SendMailAsync();
     }
     
     

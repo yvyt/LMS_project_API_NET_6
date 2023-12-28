@@ -41,6 +41,12 @@ namespace UserService.Controller
             }
             return BadRequest("Something is not valid");
         }
+        [HttpGet("SendMail")]
+        public IActionResult SendMail()
+        {
+            var result = _userService.SendMailAsync();
+            return Ok(result);
+        }
     }
   
 }

@@ -1,7 +1,11 @@
+using MailKit;
+using MailService.Models;
+using MailService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using NETCore.MailKit.Core;
 using System.Text;
 using UserService.Data;
 using UserService.Service;
@@ -37,6 +41,11 @@ builder.Services.AddAuthentication(auth =>
         IssuerSigningKey=new SymmetricSecurityKey(secretBytes)
     };
 });
+// add mail config
+var emailConfig = builder.Configuration.GetSection("MailSettings")
+    .Get<MailSettings>();
+builder.Services.AddSingleton(emailConfig);
+builder.Services.AddScoped<IMailServices,MailServices>();
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(op =>
 {
     op.Password.RequireDigit = false;

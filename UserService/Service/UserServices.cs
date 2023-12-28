@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using MailService.Models;
+using MailService.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -12,20 +14,23 @@ namespace UserService.Service
         private UserManager<IdentityUser> _userManager;
         private IConfiguration _config;
         private RoleManager<IdentityRole> _roleManager;
-        public UserServices(UserManager<IdentityUser> userManager, IConfiguration config, RoleManager<IdentityRole> roleManager)
+        private readonly IMailServices _mailService;
+        public UserServices(UserManager<IdentityUser> userManager, IConfiguration config, RoleManager<IdentityRole> roleManager
+            , IMailServices mailServices)
         {
             _userManager = userManager;
             _config = config;
             _roleManager = roleManager;
+            _mailService = mailServices;
         }
 
         public async Task<UserManagerRespone> LoginAsync(LoginUser user)
         {
-            if(user == null)
+            if (user == null)
             {
                 throw new NullReferenceException("Login is null");
             }
-            var userLogin= await _userManager.FindByEmailAsync(user.Email);
+            var userLogin = await _userManager.FindByEmailAsync(user.Email);
             if (userLogin == null)
             {
                 return new UserManagerRespone
@@ -56,16 +61,16 @@ namespace UserService.Service
                     expires: DateTime.Now.AddDays(30),
                     signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
                 );
-            string accesstoken= new JwtSecurityTokenHandler().WriteToken(token);
+            string accesstoken = new JwtSecurityTokenHandler().WriteToken(token);
             return new UserManagerRespone
             {
                 Message = accesstoken,
                 IsSuccess = true,
-                ExpireDate= token.ValidTo,
+                ExpireDate = token.ValidTo,
             };
         }
 
-        public async Task<UserManagerRespone> RegisterUserAsync(RegisterUser user,string role)
+        public async Task<UserManagerRespone> RegisterUserAsync(RegisterUser user, string role)
         {
             if (user == null)
             {
@@ -84,11 +89,11 @@ namespace UserService.Service
                 Email = user.Email,
                 UserName = user.Email,
             };
-            var checkRole= await _roleManager.RoleExistsAsync(role);
+            var checkRole = await _roleManager.RoleExistsAsync(role);
             if (checkRole)
             {
                 var result = await _userManager.CreateAsync(identityUser, user.Password);
-                
+
                 if (!result.Succeeded)
                 {
                     return new UserManagerRespone
@@ -115,8 +120,19 @@ namespace UserService.Service
                     IsSuccess = false,
                 };
             }
-            
-            
+
+
         }
-    }
+
+        public UserManagerRespone SendMailAsync()
+        {
+            var mess = new Message(new string[] { "huynhnguyentuongvy293@gmail.com" }, "Test...", "Checking send mail" );
+            _mailService.SendEmail(mess);
+            return new UserManagerRespone
+            {
+                Message = "Email sent successfully",
+                IsSuccess = true,
+            };
+        }
+}
 }
