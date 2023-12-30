@@ -115,6 +115,25 @@ namespace UserService.Controller
             }
             return BadRequest(result);
         }
+        [HttpGet("UserById")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Leadership")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var result = await _userService.GetUser(id);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return NotFound(new UserManagerRespone
+            {
+                Message = "Don't have user with: "+id
+            });
+        }
+        [HttpPost("Logout")]
+        public async Task<IActionResult> LogOut()
+        {
+            return Ok(_userService.LogOut());
+        }
     }
   
 }

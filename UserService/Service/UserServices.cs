@@ -332,5 +332,25 @@ namespace UserService.Service
                 IsSuccess = true,
             };
         }
+
+        public async Task<IdentityUser> GetUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if(user != null)
+            {
+                return user;
+            }
+            return null;
+        }
+
+        public async Task<UserManagerRespone> LogOut()
+        {
+            await _signInManager.SignOutAsync();
+            return new UserManagerRespone
+            {
+                Message = "Log Out successully"
+            };
+
+        }
     }
 }
