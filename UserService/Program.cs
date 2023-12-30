@@ -3,6 +3,9 @@ using MailService.Models;
 using MailService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NETCore.MailKit.Core;
@@ -46,6 +49,10 @@ var emailConfig = builder.Configuration.GetSection("MailSettings")
     .Get<MailSettings>();
 builder.Services.AddSingleton(emailConfig);
 builder.Services.AddScoped<IMailServices,MailServices>();
+builder.Services.AddHttpContextAccessor();
+
+
+
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(op =>
 {
     op.Password.RequireDigit = false;

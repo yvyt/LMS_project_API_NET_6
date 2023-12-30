@@ -5,7 +5,7 @@ using UserService.Service;
 
 namespace UserService.Controller
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -15,14 +15,16 @@ namespace UserService.Controller
             _userService = userService;
         }
         [HttpPost("Register")]
-        public async Task<IActionResult> RegisterAsync([FromBody] RegisterUser user,string role)
+        public async Task<IActionResult> RegisterAsync([FromBody] RegisterUser user, string role)
         {
-            if(ModelState.IsValid) {
-                var result= await _userService.RegisterUserAsync(user,role);
-                if(result.IsSuccess)
+            if (ModelState.IsValid)
+            {
+                var result = await _userService.RegisterUserAsync(user, role);
+                if (result.IsSuccess)
                 {
                     return Ok(result);
                 }
+
                 return BadRequest(result);
             }
             return BadRequest("Something is not valid");
@@ -32,8 +34,8 @@ namespace UserService.Controller
         {
             if (ModelState.IsValid)
             {
-               var result=await _userService.LoginAsync(user);
-                if(result.IsSuccess)
+                var result = await _userService.LoginAsync(user);
+                if (result.IsSuccess)
                 {
                     return Ok(result);
                 }
@@ -41,10 +43,21 @@ namespace UserService.Controller
             }
             return BadRequest("Something is not valid");
         }
-        [HttpGet("SendMail")]
-        public IActionResult SendMail()
+        [HttpGet("ConfirmEmail")]
+        public async Task<IActionResult> Confirm(string email, string token)
         {
-            var result = _userService.SendMailAsync();
+            var result = await _userService.ConfirmEmail(email, token);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpGet("Test")]
+        public async Task<IActionResult> Confirm(string email)
+        {
+            var result = await _userService.SendMailAsync(email);
+           
             return Ok(result);
         }
     }
