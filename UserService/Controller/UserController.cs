@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UserService.Model;
 using UserService.Service;
@@ -60,6 +61,31 @@ namespace UserService.Controller
            
             return Ok(result);
         }
+        [HttpPost("LoginWithOTP")]
+        public async Task<IActionResult> LoginWithOTP(string otp, string email)
+        {
+            var result= await _userService.LoginWithOTP(otp, email);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpGet("UserManager")]
+        [Authorize(AuthenticationSchemes = "Bearer",Roles ="Leadership")]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _userService.GetAll();
+            if(result!=null)
+            {
+                return Ok(result);
+            }
+            return Ok(new UserManagerRespone
+            {
+                Message = "Don't have any user"
+            }) ;
+        }
+
     }
   
 }

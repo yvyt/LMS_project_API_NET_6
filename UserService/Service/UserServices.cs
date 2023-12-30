@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -74,6 +76,7 @@ namespace UserService.Service
                 var token = CreateToken(authClaim);
                 return new UserManagerRespone
                 {
+                    IsSuccess=true,
                     Message = new JwtSecurityTokenHandler().WriteToken(token),
                     ExpireDate = token.ValidTo
                 };
@@ -198,6 +201,53 @@ namespace UserService.Service
 
             };
 
+        }
+        public async Task<UserManagerRespone> LoginWithOTP(string otp, string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            var result = await _signInManager.TwoFactorSignInAsync("Email", otp, false, false);
+            if(result.Succeeded)
+            {
+                if (user != null)
+                {
+                    var authClaim = new List<Claim>
+                    {
+                       new Claim("Email",user.Email),
+                       new Claim(ClaimTypes.NameIdentifier,user.Id),
+                       new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+
+                    };
+                    var userRole = await _userManager.GetRolesAsync(user);
+                    foreach (var role in userRole)
+                    {
+                        authClaim.Add(new Claim(ClaimTypes.Role, role));
+                    }
+                    var token = CreateToken(authClaim);
+                    return new UserManagerRespone
+                    {
+                        IsSuccess=true,
+                        Message = new JwtSecurityTokenHandler().WriteToken(token),
+                        ExpireDate = token.ValidTo
+                    };
+                }
+                return new UserManagerRespone
+                {
+                    IsSuccess = false,
+                    Message = $"Doesn't exist user with {email}",
+                };
+            }
+            return new UserManagerRespone
+            {
+                Message = "Unthorized",
+                IsSuccess = false,
+                
+            };
+        }
+
+        public async Task<List<IdentityUser>> GetAll()
+        {
+            var allUsers = await _userManager.Users.ToListAsync();
+            return allUsers;
         }
     }
 }
