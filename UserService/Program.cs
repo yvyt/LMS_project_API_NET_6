@@ -28,7 +28,7 @@ builder.Services.AddSwaggerGen(option =>
     {
         In = ParameterLocation.Header,
         Description = "Need a valid token",
-        Name = "Authorization",
+        Name = "Authorization Token",
         Type = SecuritySchemeType.Http,
         BearerFormat = "JWT",
         Scheme = "Bearer"
@@ -79,7 +79,10 @@ builder.Services.AddSingleton(emailConfig);
 builder.Services.AddScoped<IMailServices,MailServices>();
 builder.Services.AddHttpContextAccessor();
 
-
+builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+{
+    options.TokenLifespan=TimeSpan.FromHours(1);
+});
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(op =>
 {

@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -248,6 +249,88 @@ namespace UserService.Service
         {
             var allUsers = await _userManager.Users.ToListAsync();
             return allUsers;
+        }
+
+        public async Task<UserManagerRespone> ForgotPassword(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if(user != null)
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                //var encodedToken = WebUtility.UrlEncode(token);
+
+                var request = _httpContextAccessor.HttpContext?.Request;
+
+                if (request != null)
+                {
+                    var baseUrl = $"{request.Scheme}://{request.Host}";
+
+                    var link = $"{baseUrl}/User/ResetPassword?token={token}&email={user.Email}";
+                    var message = new Message(new string[] { user.Email! }, "Reset Password link", link!);
+                    _mailService.SendEmail(message);
+                }
+                return new UserManagerRespone
+                {
+                    Message = $"{token}",
+                    IsSuccess = true,
+
+                };
+            }
+            return new UserManagerRespone
+            {
+                Message = $"Don't exist user with {email}",
+                IsSuccess = false,
+            };
+        }
+
+        public UserManagerRespone GetResetPassword(string token, string email)
+        {
+            var resetModel = new ResetPassword
+            {
+                Token = token,
+                Email = email
+            };
+            return new UserManagerRespone
+            {
+                Message = $"Token:{resetModel.Token}",
+                IsSuccess=true
+            };
+        }
+
+        public async Task<UserManagerRespone> ResetPassword(ResetPassword model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user != null)
+            {
+                //var decodedToken = HttpUtility.UrlDecode(model.Token);
+                //var decodedToken = WebUtility.UrlDecode(model.Token);
+                var code = model.Token.Replace(" ", "+");
+
+                var result = await _userManager.ResetPasswordAsync(user, code, model.Password);
+                if (!result.Succeeded)
+                {
+                    foreach(var r in result.Errors)
+                    {
+                        return new UserManagerRespone
+                        {
+                            Message = "Password don't reset",
+                            IsSuccess = false,
+                            Errors = result.Errors.Select(e => e.Description)
+                        };
+                    }
+                }
+                return new UserManagerRespone
+                {
+                    Message = "Password has been reset",
+                    IsSuccess = true,
+                };
+
+            }
+            return new UserManagerRespone
+            {
+                Message = $"Don't exist user with {model.Email}",
+                IsSuccess = true,
+            };
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using UserService.Model;
 using UserService.Service;
 
@@ -85,7 +86,35 @@ namespace UserService.Controller
                 Message = "Don't have any user"
             }) ;
         }
+        [HttpPost("ForgotPassword")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword([Required] string email)
+        {
+            var result = await _userService.ForgotPassword(email);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpGet("ResetPassword")]
+        public IActionResult GetResetPassword(string token, string email)
+        {
+            var result = _userService.GetResetPassword(token, email);
+            return Ok(result);
+        }
+        [HttpPost("ResetPassword")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword(ResetPassword model)
+        {
+            var result =await _userService.ResetPassword(model);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
 
+            }
+            return BadRequest(result);
+        }
     }
   
 }
