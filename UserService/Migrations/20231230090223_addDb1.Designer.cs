@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UserService.Data;
 
@@ -11,9 +12,10 @@ using UserService.Data;
 namespace UserService.Migrations
 {
     [DbContext(typeof(AppicationDbContext))]
-    partial class AppicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231230090223_addDb1")]
+    partial class addDb1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,21 +53,21 @@ namespace UserService.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "48f64b2c-f113-4d03-a342-42429ea39f15",
+                            Id = "9bfc21b3-85fb-42ff-88ff-6ff42b695c33",
                             ConcurrencyStamp = "1",
                             Name = "Leadership",
                             NormalizedName = "Leadership"
                         },
                         new
                         {
-                            Id = "a9465f72-ff0b-4919-92c7-d0d049a91a51",
+                            Id = "7bcd5598-2eb5-442e-9cd7-1cc5cdebb371",
                             ConcurrencyStamp = "2",
                             Name = "Teacher",
                             NormalizedName = "Teacher"
                         },
                         new
                         {
-                            Id = "fd455dd4-097a-457e-95a3-21c40374fb01",
+                            Id = "4af4ba4a-59a8-4d1d-a837-84d116e4813d",
                             ConcurrencyStamp = "3",
                             Name = "Student",
                             NormalizedName = "Student"
@@ -107,6 +109,10 @@ namespace UserService.Migrations
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
@@ -160,6 +166,8 @@ namespace UserService.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("IdentityUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -245,14 +253,9 @@ namespace UserService.Migrations
 
             modelBuilder.Entity("UserService.Data.User", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
 
                     b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -264,9 +267,7 @@ namespace UserService.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
-
-                    b.ToTable("Users", (string)null);
+                    b.HasDiscriminator().HasValue("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

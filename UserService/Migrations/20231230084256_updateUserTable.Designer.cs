@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UserService.Data;
 
@@ -11,9 +12,10 @@ using UserService.Data;
 namespace UserService.Migrations
 {
     [DbContext(typeof(AppicationDbContext))]
-    partial class AppicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231230084256_updateUserTable")]
+    partial class updateUserTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,21 +53,21 @@ namespace UserService.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "48f64b2c-f113-4d03-a342-42429ea39f15",
+                            Id = "e0bed29b-0f5c-44f6-8788-ea15aff6d8a9",
                             ConcurrencyStamp = "1",
                             Name = "Leadership",
                             NormalizedName = "Leadership"
                         },
                         new
                         {
-                            Id = "a9465f72-ff0b-4919-92c7-d0d049a91a51",
+                            Id = "21c69c2b-f8d2-4153-a2f2-3d5f7abfacb6",
                             ConcurrencyStamp = "2",
                             Name = "Teacher",
                             NormalizedName = "Teacher"
                         },
                         new
                         {
-                            Id = "fd455dd4-097a-457e-95a3-21c40374fb01",
+                            Id = "66e1b405-8388-4296-9c72-1b499f7d23cd",
                             ConcurrencyStamp = "3",
                             Name = "Student",
                             NormalizedName = "Student"
@@ -264,9 +266,13 @@ namespace UserService.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

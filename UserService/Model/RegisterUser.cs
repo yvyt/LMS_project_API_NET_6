@@ -14,5 +14,9 @@ namespace UserService.Model
         [Required]
         [StringLength(50, MinimumLength = 8)]
         public string ConfirmPassword {  get; set; }
+        [Required]
+        [StringLength(10)]
+        public string Phone {  get; set; }
+       
     }
 }

@@ -5,7 +5,9 @@ VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserService", "UserService\UserService.csproj", "{E8C4E2A7-8C59-4946-A8CE-C38C1577FF6D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailService", "MailService\MailService.csproj", "{87A04A5A-B15B-45D6-8743-9DADE8DB5EF4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MailService", "MailService\MailService.csproj", "{87A04A5A-B15B-45D6-8743-9DADE8DB5EF4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CourseService", "CourseService\CourseService.csproj", "{10EE71C6-2014-4EF6-8462-E08AF8291F4A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{87A04A5A-B15B-45D6-8743-9DADE8DB5EF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87A04A5A-B15B-45D6-8743-9DADE8DB5EF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87A04A5A-B15B-45D6-8743-9DADE8DB5EF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10EE71C6-2014-4EF6-8462-E08AF8291F4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10EE71C6-2014-4EF6-8462-E08AF8291F4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10EE71C6-2014-4EF6-8462-E08AF8291F4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10EE71C6-2014-4EF6-8462-E08AF8291F4A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

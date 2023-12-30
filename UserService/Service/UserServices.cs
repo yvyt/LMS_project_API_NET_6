@@ -121,6 +121,8 @@ namespace UserService.Service
             {
                 Email = user.Email,
                 UserName = user.Email,
+                PhoneNumber= user.Phone,
+                
                 TwoFactorEnabled=true
             };
             var checkRole = await _roleManager.RoleExistsAsync(role);
