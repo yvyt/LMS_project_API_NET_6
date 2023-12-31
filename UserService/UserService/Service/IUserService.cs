@@ -14,7 +14,8 @@ namespace UserService.Service
         Task<UserManagerRespone> ForgotPassword(string email);
         UserManagerRespone GetResetPassword(string token, string email);
         Task<UserManagerRespone> ResetPassword(ResetPassword model);
-        Task<IdentityUser> GetUser(string id);
+        Task<UserDTO> GetUser(string id);
+        Task<UserDTO> GetUserByToken (string token);
         Task<UserManagerRespone> LogOut();
     }
     

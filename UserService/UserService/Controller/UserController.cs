@@ -116,7 +116,6 @@ namespace UserService.Controller
             return BadRequest(result);
         }
         [HttpGet("UserById")]
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Leadership")]
         public async Task<IActionResult> GetById(string id)
         {
             var result = await _userService.GetUser(id);
@@ -134,6 +133,20 @@ namespace UserService.Controller
         {
             return Ok(_userService.LogOut());
         }
+        [HttpGet("UserByToken")]
+        public async Task<IActionResult> GetByToken(string token)
+        {
+            var result = await _userService.GetUserByToken(token);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return NotFound(new UserManagerRespone
+            {
+                Message = "Don't have user with: " + token
+            });
+        }
     }
   
 }
+ 

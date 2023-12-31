@@ -17,7 +17,7 @@ namespace CourseService.Controllers
             _courseService = courseService;
         }
         [HttpPost("AddCourse")]
-        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(AuthenticationSchemes = "Bearer",Roles ="Leadership")]
         public async Task<IActionResult> AddCourse(Course c)
         {
             var result = await _courseService.AddCourse(c);
@@ -27,6 +27,49 @@ namespace CourseService.Controllers
             }
             return BadRequest(result);
         }
-        
+        [HttpGet("AllCourses")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Leadership")]
+        public  IActionResult AllCourse()
+        {
+            var result = _courseService.GetAll();
+            if (result!=null)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpGet("CourseById")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public IActionResult GetCourse(string id)
+        {
+            var result = _courseService.GetById(id);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpPost("EditCourse")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public async Task<IActionResult> Update(string id,Model.Course course)
+        {
+            var result = await _courseService.UpdateCourse(id,course);
+            if(result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpPost("DeleteCourse")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var result = await _courseService.DeleteCoure(id);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
     }
 }

@@ -38,9 +38,17 @@ namespace CourseService.Service
                     };
                     _context.Courses.Add(co);
                     int numberOfChanges = await _context.SaveChangesAsync();
+                    if(numberOfChanges > 0)
+                    {
+                        return new UserManagerRespone
+                        {
+                            Message = $"Successfully saved {numberOfChanges} changes to the database.",
+                            IsSuccess = true,
+                        };
+                    }
                     return new UserManagerRespone
                     {
-                        Message = $"Successfully saved {numberOfChanges} changes to the database.",
+                        Message = $"Error when create new course.",
                         IsSuccess = true,
                     };
 
@@ -63,28 +71,148 @@ namespace CourseService.Service
 
         }
 
-        private JwtSecurityToken DecodeJwtToken(string token, SymmetricSecurityKey key)
+        public async Task<UserManagerRespone> DeleteCoure(string id)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-
-            var tokenValidationParameters = new TokenValidationParameters
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO;
+            if (user != null)
             {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = key,
+                try
+                {
+                    var c = await _context.Courses.FirstOrDefaultAsync(cs => cs.Id == id);
+                    if (c == null)
+                    {
+                        return new UserManagerRespone
+                        {
+                            Message = $"Don't have course with id={id}",
+                            IsSuccess = false
+                        };
+                    }
+                    c.IsDeleted = true;
+                    c.UpdatedAt = DateTime.UtcNow;
+                    var numberChange = await _context.SaveChangesAsync();
+                    if (numberChange > 0)
+                    {
+                        return new UserManagerRespone
+                        {
+                            Message = $"Delete course successfully",
+                            IsSuccess = true
+                        };
+                    }
 
-                ValidateIssuer = true,
-                ValidIssuer = _config["AuthSettings:Issuer"],
+                }
+                catch (Exception ex)
+                {
+                    return new UserManagerRespone
+                    {
+                        Message = $"Error when delete: {ex.Message}",
+                        IsSuccess = false
+                    };
+                }
+            }
+            return  new UserManagerRespone
+            {
+                Message = $"Unauthorized",
+                IsSuccess = false
+            }; ;
+        }
 
-                ValidateAudience = true,
-                ValidAudience = _config["AuthSettings:Audience"], 
-                ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero 
+        public List<Data.Course> GetAll()
+        {
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO;
+            if (user != null)
+            {
+                try
+                {
+                    var courses= _context.Courses.ToList();
+                    return courses;
+
+                }
+                catch (Exception ex)
+                {
+                    // Handle exceptions appropriately
+                    return null;
+                }
+            }
+            return null;
+        }
+
+      
+
+        public Data.Course GetById(string id)
+        {
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO;
+            if (user != null)
+            {
+                try
+                {
+                    var c = _context.Courses.FirstOrDefault(co => co.Id == id);
+                    if (c != null)
+                    {
+                        return c;
+                    }
+                    return null;
+
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        public async Task<UserManagerRespone> UpdateCourse(string id, Model.Course course)
+        {
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO;
+            if (user != null)
+            {
+                try
+                {
+                    var courses = await _context.Courses.FirstOrDefaultAsync(c => c.Id == id);
+                    if (courses == null)
+                    {
+                        return new UserManagerRespone
+                        {
+                            Message = $"Don't have course with id={id}",
+                            IsSuccess = false
+                        };
+                    }
+                    courses.Name=course.Name;
+                    courses.UpdatedAt = DateTime.UtcNow;
+                    var numberColumnsChange= await _context.SaveChangesAsync();
+                    if (numberColumnsChange > 0)
+                    {
+                        return new UserManagerRespone
+                        {
+                            Message = $"Successfully update course",
+                            IsSuccess = true,
+                        };
+                    }
+                    return new UserManagerRespone
+                    {
+                        Message = $"Error when update course",
+                        IsSuccess = false,
+                    };
+
+                }
+                catch (Exception ex)
+                {
+                    return new UserManagerRespone
+                    {
+                        Message = $"Error: {ex.Message}",
+                        IsSuccess = false,
+                    };
+                }
+            }
+            return new UserManagerRespone
+            {
+                Message = $"Unauthorize",
+                IsSuccess = false,
             };
 
-            SecurityToken securityToken;
-            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out securityToken);
-
-            return securityToken as JwtSecurityToken;
         }
+
+
+        
     }
 }

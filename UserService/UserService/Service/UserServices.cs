@@ -5,9 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Asn1.Ocsp;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
@@ -37,7 +39,7 @@ namespace UserService.Service
             _roleManager = roleManager;
             _mailService = mailServices;
             _httpContextAccessor = contextAccessor;
-            _signInManager=signInManager;
+            _signInManager = signInManager;
         }
 
         public async Task<UserManagerRespone> LoginAsync(LoginUser user)
@@ -56,8 +58,8 @@ namespace UserService.Service
                 _mailService.SendEmail(message);
                 return new UserManagerRespone
                 {
-                    Message=$"An OTP email has been already sent to your email {user.Email}",
-                    IsSuccess=true,
+                    Message = $"An OTP email has been already sent to your email {user.Email}",
+                    IsSuccess = true,
                 };
             }
             if (userLogin != null && await _userManager.CheckPasswordAsync(userLogin, user.Password))
@@ -77,7 +79,7 @@ namespace UserService.Service
                 var token = CreateToken(authClaim);
                 return new UserManagerRespone
                 {
-                    IsSuccess=true,
+                    IsSuccess = true,
                     Message = new JwtSecurityTokenHandler().WriteToken(token),
                     ExpireDate = token.ValidTo
                 };
@@ -87,7 +89,7 @@ namespace UserService.Service
                 Message = "Unauthorized",
                 IsSuccess = false
             };
-            
+
         }
 
         private JwtSecurityToken CreateToken(List<Claim> authClaim)
@@ -121,9 +123,9 @@ namespace UserService.Service
             {
                 Email = user.Email,
                 UserName = user.Email,
-                PhoneNumber= user.Phone,
-                
-                TwoFactorEnabled=true
+                PhoneNumber = user.Phone,
+
+                TwoFactorEnabled = true
             };
             var checkRole = await _roleManager.RoleExistsAsync(role);
             if (checkRole)
@@ -159,7 +161,7 @@ namespace UserService.Service
                 {
                     Message = $"User created & Email Sent to {user.Email} SuccessFully",
                     IsSuccess = true,
-                    
+
                 };
 
             }
@@ -209,7 +211,7 @@ namespace UserService.Service
         {
             var user = await _userManager.FindByEmailAsync(email);
             var result = await _signInManager.TwoFactorSignInAsync("Email", otp, false, false);
-            if(result.Succeeded)
+            if (result.Succeeded)
             {
                 if (user != null)
                 {
@@ -228,7 +230,7 @@ namespace UserService.Service
                     var token = CreateToken(authClaim);
                     return new UserManagerRespone
                     {
-                        IsSuccess=true,
+                        IsSuccess = true,
                         Message = new JwtSecurityTokenHandler().WriteToken(token),
                         ExpireDate = token.ValidTo
                     };
@@ -243,7 +245,7 @@ namespace UserService.Service
             {
                 Message = "Unthorized",
                 IsSuccess = false,
-                
+
             };
         }
 
@@ -256,7 +258,7 @@ namespace UserService.Service
         public async Task<UserManagerRespone> ForgotPassword(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
-            if(user != null)
+            if (user != null)
             {
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
                 //var encodedToken = WebUtility.UrlEncode(token);
@@ -295,7 +297,7 @@ namespace UserService.Service
             return new UserManagerRespone
             {
                 Message = $"Token:{resetModel.Token}",
-                IsSuccess=true
+                IsSuccess = true
             };
         }
 
@@ -311,7 +313,7 @@ namespace UserService.Service
                 var result = await _userManager.ResetPasswordAsync(user, code, model.Password);
                 if (!result.Succeeded)
                 {
-                    foreach(var r in result.Errors)
+                    foreach (var r in result.Errors)
                     {
                         return new UserManagerRespone
                         {
@@ -335,12 +337,21 @@ namespace UserService.Service
             };
         }
 
-        public async Task<IdentityUser> GetUser(string id)
+        public async Task<UserDTO> GetUser(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
-            if(user != null)
+
+            if (user != null)
             {
-                return user;
+                var roleName = await _userManager.GetRolesAsync(user);
+                var firstRole = roleName.FirstOrDefault();
+
+                return new UserDTO
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    RoleName = firstRole
+                };
             }
             return null;
         }
@@ -353,6 +364,55 @@ namespace UserService.Service
                 Message = "Log Out successully"
             };
 
+        }
+
+        public async Task<UserDTO> GetUserByToken(string token)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["AuthSettings:Key"]));
+            var decodedToken = DecodeJwtToken(token, key);
+
+            var userId = decodedToken?.Claims.FirstOrDefault(claim => claim.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+            var email = decodedToken?.Claims.FirstOrDefault(claim => claim.Type == "Email")?.Value;
+            var role = decodedToken?.Claims.FirstOrDefault(claim => claim.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user != null)
+            {
+                var roleName = await _userManager.GetRolesAsync(user);
+                var firstRole = roleName.FirstOrDefault();
+
+                return new UserDTO
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    RoleName = firstRole
+                };
+            }
+            return null;
+        }
+        private JwtSecurityToken DecodeJwtToken(string accessToken, SymmetricSecurityKey key)
+        {
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = key,
+
+                ValidateIssuer = true,
+                ValidIssuer = _config["AuthSettings:Issuer"],
+
+                ValidateAudience = true,
+                ValidAudience = _config["AuthSettings:Audience"],
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+
+            SecurityToken securityToken;
+            var principal = tokenHandler.ValidateToken(accessToken, tokenValidationParameters, out securityToken);
+
+            return securityToken as JwtSecurityToken;
         }
     }
 }
