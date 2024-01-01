@@ -1,9 +1,9 @@
-﻿using CourseService.Service;
-using CourseService.Service.UserServiceClinet;
+﻿using CourseService.Service.UserServiceClinet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using CourseService.Model;
 using Microsoft.AspNetCore.Authorization;
+using CourseService.Service.CoursesService;
 
 namespace CourseService.Controllers
 {
@@ -18,7 +18,7 @@ namespace CourseService.Controllers
         }
         [HttpPost("AddCourse")]
         [Authorize(AuthenticationSchemes = "Bearer",Roles ="Leadership")]
-        public async Task<IActionResult> AddCourse(Course c)
+        public async Task<IActionResult> AddCourse(CourseDTO c)
         {
             var result = await _courseService.AddCourse(c);
             if(result.IsSuccess)
@@ -51,7 +51,7 @@ namespace CourseService.Controllers
         }
         [HttpPost("EditCourse")]
         [Authorize(AuthenticationSchemes = "Bearer")]
-        public async Task<IActionResult> Update(string id,Model.Course course)
+        public async Task<IActionResult> Update(string id,Model.CourseDTO course)
         {
             var result = await _courseService.UpdateCourse(id,course);
             if(result.IsSuccess)
@@ -71,5 +71,6 @@ namespace CourseService.Controllers
             }
             return BadRequest(result);
         }
+        
     }
 }

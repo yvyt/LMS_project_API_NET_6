@@ -2,11 +2,11 @@
 
 namespace CourseService.Model
 {
-    public class Course
+    public class CourseDTO
     {
         [Required]
         public string Name { get; set; }
-       
+        
 
     }
 }

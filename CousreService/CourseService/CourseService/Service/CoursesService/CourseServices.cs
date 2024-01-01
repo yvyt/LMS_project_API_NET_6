@@ -1,13 +1,9 @@
 ﻿using CourseService.Data;
 using CourseService.Model;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using UserService.Model;
 
-namespace CourseService.Service
+namespace CourseService.Service.CoursesService
 {
     public class CourseServices : ICourseService
     {
@@ -23,7 +19,7 @@ namespace CourseService.Service
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<UserManagerRespone> AddCourse(Model.Course course)
+        public async Task<ManagerRespone> AddCourse(CourseDTO course)
         {
 
             var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO;
@@ -31,22 +27,22 @@ namespace CourseService.Service
             {
                 try
                 {
-                    Data.Course co = new Data.Course
+                    Course co = new Course
                     {
                         Name = course.Name,
                         userId = user.Id,
                     };
                     _context.Courses.Add(co);
                     int numberOfChanges = await _context.SaveChangesAsync();
-                    if(numberOfChanges > 0)
+                    if (numberOfChanges > 0)
                     {
-                        return new UserManagerRespone
+                        return new ManagerRespone
                         {
                             Message = $"Successfully saved {numberOfChanges} changes to the database.",
                             IsSuccess = true,
                         };
                     }
-                    return new UserManagerRespone
+                    return new ManagerRespone
                     {
                         Message = $"Error when create new course.",
                         IsSuccess = true,
@@ -56,14 +52,14 @@ namespace CourseService.Service
                 catch (Exception ex)
                 {
                     // Handle exceptions appropriately
-                    return new UserManagerRespone
+                    return new ManagerRespone
                     {
                         Message = $"Error: {ex.Message}",
                         IsSuccess = false,
                     };
                 }
             }
-            return new UserManagerRespone
+            return new ManagerRespone
             {
                 Message = $"Unauthorize",
                 IsSuccess = false,
@@ -71,7 +67,7 @@ namespace CourseService.Service
 
         }
 
-        public async Task<UserManagerRespone> DeleteCoure(string id)
+        public async Task<ManagerRespone> DeleteCoure(string id)
         {
             var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO;
             if (user != null)
@@ -81,7 +77,7 @@ namespace CourseService.Service
                     var c = await _context.Courses.FirstOrDefaultAsync(cs => cs.Id == id);
                     if (c == null)
                     {
-                        return new UserManagerRespone
+                        return new ManagerRespone
                         {
                             Message = $"Don't have course with id={id}",
                             IsSuccess = false
@@ -89,10 +85,11 @@ namespace CourseService.Service
                     }
                     c.IsDeleted = true;
                     c.UpdatedAt = DateTime.UtcNow;
+                    _context.Courses.Update(c);
                     var numberChange = await _context.SaveChangesAsync();
                     if (numberChange > 0)
                     {
-                        return new UserManagerRespone
+                        return new ManagerRespone
                         {
                             Message = $"Delete course successfully",
                             IsSuccess = true
@@ -102,28 +99,28 @@ namespace CourseService.Service
                 }
                 catch (Exception ex)
                 {
-                    return new UserManagerRespone
+                    return new ManagerRespone
                     {
                         Message = $"Error when delete: {ex.Message}",
                         IsSuccess = false
                     };
                 }
             }
-            return  new UserManagerRespone
+            return new ManagerRespone
             {
                 Message = $"Unauthorized",
                 IsSuccess = false
             }; ;
         }
 
-        public List<Data.Course> GetAll()
+        public List<Course> GetAll()
         {
             var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO;
             if (user != null)
             {
                 try
                 {
-                    var courses= _context.Courses.ToList();
+                    var courses = _context.Courses.ToList();
                     return courses;
 
                 }
@@ -136,9 +133,9 @@ namespace CourseService.Service
             return null;
         }
 
-      
 
-        public Data.Course GetById(string id)
+
+        public Course GetById(string id)
         {
             var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO;
             if (user != null)
@@ -161,7 +158,7 @@ namespace CourseService.Service
             return null;
         }
 
-        public async Task<UserManagerRespone> UpdateCourse(string id, Model.Course course)
+        public async Task<ManagerRespone> UpdateCourse(string id, CourseDTO course)
         {
             var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO;
             if (user != null)
@@ -171,24 +168,25 @@ namespace CourseService.Service
                     var courses = await _context.Courses.FirstOrDefaultAsync(c => c.Id == id);
                     if (courses == null)
                     {
-                        return new UserManagerRespone
+                        return new ManagerRespone
                         {
                             Message = $"Don't have course with id={id}",
                             IsSuccess = false
                         };
                     }
-                    courses.Name=course.Name;
+                    courses.Name = course.Name;
                     courses.UpdatedAt = DateTime.UtcNow;
-                    var numberColumnsChange= await _context.SaveChangesAsync();
+                    _context.Courses.Update(courses);
+                    var numberColumnsChange = await _context.SaveChangesAsync();
                     if (numberColumnsChange > 0)
                     {
-                        return new UserManagerRespone
+                        return new ManagerRespone
                         {
                             Message = $"Successfully update course",
                             IsSuccess = true,
                         };
                     }
-                    return new UserManagerRespone
+                    return new ManagerRespone
                     {
                         Message = $"Error when update course",
                         IsSuccess = false,
@@ -197,14 +195,14 @@ namespace CourseService.Service
                 }
                 catch (Exception ex)
                 {
-                    return new UserManagerRespone
+                    return new ManagerRespone
                     {
                         Message = $"Error: {ex.Message}",
                         IsSuccess = false,
                     };
                 }
             }
-            return new UserManagerRespone
+            return new ManagerRespone
             {
                 Message = $"Unauthorize",
                 IsSuccess = false,
@@ -213,6 +211,6 @@ namespace CourseService.Service
         }
 
 
-        
+
     }
 }

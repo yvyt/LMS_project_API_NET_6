@@ -1,6 +1,6 @@
 ﻿namespace UserService.Model
 {
-    public class UserManagerRespone
+    public class ManagerRespone
     {
         public string Message { get; set; }
         public bool IsSuccess {  get; set; }
