@@ -198,6 +198,177 @@ namespace CourseService.Service.ClassesService
             }
             return null;
         }
+
+        public async Task<ManagerRespone> EditClass(string id,ClassDTO classDTO)
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var cl= await _context.Classes.FirstOrDefaultAsync(x=> x.Id == id);
+                    if (cl == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist class with id = {id}",
+                            IsSuccess = false
+                        };
+                    }
+                    var teacher = await GetUsersFromUserServiceAsync(classDTO.Teacher, accessToken);
+                    if (teacher == null || teacher.RoleName != "Teacher")
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Not exist Teacher with id={classDTO.Teacher}",
+                            IsSuccess = false
+                        };
+                    }
+
+                    var course = await _context.Courses.FirstOrDefaultAsync(c => c.Id == classDTO.Course);
+                    if (course == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist course with id= {classDTO.Course}.",
+                            IsSuccess = false,
+                        };
+                    }
+                    cl.Name = classDTO.Name;
+                    cl.Teacher= classDTO.Teacher;
+                    cl.CourseId = classDTO.Course;
+                    cl.Description=classDTO.Description;
+                    _context.Classes.Update(cl);
+                    int numberOfChanges = await _context.SaveChangesAsync();
+                    if (numberOfChanges > 0)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Successfully update {numberOfChanges} changes to the database.",
+                            IsSuccess = true,
+                        };
+                    }
+                    return new ManagerRespone
+                    {
+                        Message = $"Error when update class.",
+                        IsSuccess = false,
+                    };
+                }
+                catch (Exception ex)
+                {
+                    return new ManagerRespone
+                    {
+                        Message = $"Error: {ex.Message}",
+                        IsSuccess = false,
+                    };
+                }
+            }
+            return new ManagerRespone
+            {
+                Message = $"Unthorize",
+                IsSuccess = false,
+            };
+        }
+
+        public async Task<ManagerRespone> DeleteClass(string id)
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var cl = await _context.Classes.FirstOrDefaultAsync(x => x.Id == id);
+                    if (cl == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist class with id = {id}",
+                            IsSuccess = false
+                        };
+                    }
+                    cl.IsActive = false;
+                    cl.UpdatedAt=DateTime.UtcNow;
+                    _context.Classes.Update(cl);
+                    int numberOfChanges = await _context.SaveChangesAsync();
+                    if (numberOfChanges > 0)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Successfully delete class.",
+                            IsSuccess = true,
+                        };
+                    }
+                    return new ManagerRespone
+                    {
+                        Message = $"Error when delete class.",
+                        IsSuccess = false,
+                    };
+                }
+                catch (Exception ex)
+                {
+                    return new ManagerRespone
+                    {
+                        Message = $"Error: {ex.Message}",
+                        IsSuccess = false,
+                    };
+                }
+            }
+            return new ManagerRespone
+            {
+                Message = $"Unthorize",
+                IsSuccess = false,
+            };
+        }
+
+        public async Task<List<ClassDTO>> GetActiveClasses()
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var classes = _context.Classes.Where(x=>x.IsActive==true).ToList();
+                    List<ClassDTO> result = new List<ClassDTO>();
+                    string nameOfCourse = "";
+                    string nameTeacher = "";
+                    foreach (var clazz in classes)
+                    {
+                        var courseName = _context.Courses.FirstOrDefault(c => c.Id == clazz.CourseId);
+                        if (courseName != null)
+                        {
+                            nameOfCourse = courseName.Name;
+                        }
+                        var TeacherName = await GetUsersFromUserServiceAsync(clazz.Teacher, accessToken);
+                        if (TeacherName != null)
+                        {
+                            nameTeacher = TeacherName.Email;
+                        }
+                        ClassDTO classDTO = new ClassDTO
+                        {
+                            Id = clazz.Id,
+                            Course = nameOfCourse,
+                            Teacher = nameTeacher,
+                            Name = clazz.Name,
+                            Description = clazz.Description,
+                        };
+                        result.Add(classDTO);
+                    }
+                    return result;
+
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+            }
+            return null;
+        }
     }
 
 }

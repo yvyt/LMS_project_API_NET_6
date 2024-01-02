@@ -113,7 +113,7 @@ namespace CourseService.Service.CoursesService
             }; ;
         }
 
-        public List<Course> GetAll()
+        public List<CourseDTO> GetAll()
         {
             var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO;
             if (user != null)
@@ -121,7 +121,17 @@ namespace CourseService.Service.CoursesService
                 try
                 {
                     var courses = _context.Courses.ToList();
-                    return courses;
+                    List<CourseDTO> result = new List<CourseDTO>();
+                    foreach (var course in courses)
+                    {
+                        CourseDTO courseDTO = new CourseDTO
+                        {
+                            Name=course.Name,
+                            Id=course.Id,
+                        };
+                        result.Add(courseDTO);
+                    }
+                    return result;
 
                 }
                 catch (Exception ex)
@@ -135,7 +145,7 @@ namespace CourseService.Service.CoursesService
 
 
 
-        public Course GetById(string id)
+        public CourseDTO GetById(string id)
         {
             var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO;
             if (user != null)
@@ -145,7 +155,12 @@ namespace CourseService.Service.CoursesService
                     var c = _context.Courses.FirstOrDefault(co => co.Id == id);
                     if (c != null)
                     {
-                        return c;
+                        CourseDTO courseDTO = new CourseDTO
+                        {
+                            Name= c.Name,
+                            Id=c.Id,
+                        };
+                        return courseDTO;
                     }
                     return null;
 

@@ -6,7 +6,7 @@ namespace CourseService.Model
     {
         [Required]
         public string Name { get; set; }
-        
+        public string? Id { get;set; }
 
     }
 }

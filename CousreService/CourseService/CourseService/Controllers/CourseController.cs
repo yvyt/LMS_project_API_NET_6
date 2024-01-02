@@ -28,7 +28,7 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpGet("AllCourses")]
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Leadership")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         public  IActionResult AllCourse()
         {
             var result = _courseService.GetAll();
@@ -49,7 +49,7 @@ namespace CourseService.Controllers
             }
             return BadRequest(result);
         }
-        [HttpPost("EditCourse")]
+        [HttpPut("EditCourse")]
         [Authorize(AuthenticationSchemes = "Bearer")]
         public async Task<IActionResult> Update(string id,Model.CourseDTO course)
         {
@@ -60,7 +60,7 @@ namespace CourseService.Controllers
             }
             return BadRequest(result);
         }
-        [HttpPost("DeleteCourse")]
+        [HttpDelete("DeleteCourse")]
         [Authorize(AuthenticationSchemes = "Bearer")]
         public async Task<IActionResult> Delete(string id)
         {
