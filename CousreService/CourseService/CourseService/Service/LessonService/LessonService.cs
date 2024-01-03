@@ -100,10 +100,48 @@ namespace CourseService.Service.LessonService
 
         }
 
-        public  List<TypeFile> getTypes(LessonDTO lessonModel)
+        public async Task<List<LessonDTO>> GetAll()
         {
-            
-            return  _context.TypeFiles.ToList();
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var lessons = _context.Lessons.ToList();
+                    if (lessons == null)
+                    {
+                        return null;
+                    }
+                    List<LessonDTO> r = new List<LessonDTO>();
+                    foreach(var lesson in lessons)
+                    {
+                        var topic = await _context.Topics.FirstOrDefaultAsync(cl=>cl.Id == lesson.TopicId);
+                        if (topic == null)
+                        {
+                            return null;
+                        }
+                        var typ= await _context.TypeFiles.FirstOrDefaultAsync(t=>t.Id==lesson.TypeId);
+                        LessonDTO topicDTO = new LessonDTO
+                        {
+                            Id = lesson.Id,
+                            Topic = topic.Name,
+                            Title = lesson.Title,
+                            Type = typ.Name,
+
+                        };
+                        r.Add(topicDTO);
+                    }
+                    return r;
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+            }
+            return null;
+
         }
     }
 }

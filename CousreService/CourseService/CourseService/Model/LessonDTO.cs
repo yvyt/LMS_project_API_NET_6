@@ -16,5 +16,7 @@ namespace CourseService.Model
         public string Title { get; set; }
 
         public IFormFile FileContent { get; set; }
+
+        public string? Id {  get; set; }
     }
 }

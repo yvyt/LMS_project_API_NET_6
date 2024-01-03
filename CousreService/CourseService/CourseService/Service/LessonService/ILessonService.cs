@@ -7,6 +7,6 @@ namespace CourseService.Service.LessonService
     public interface ILessonService
     {
         Task<ManagerRespone> AddLesson(LessonDTO lessonDTO);
-        List<TypeFile> getTypes(LessonDTO lessonModel);
+        Task<List<LessonDTO>> GetAll();
     }
 }

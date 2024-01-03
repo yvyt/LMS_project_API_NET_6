@@ -16,10 +16,8 @@ namespace CourseService.Controllers
     public class LessonController : ControllerBase
     {
         private readonly ILessonService _lessonService;
-        private readonly CourseContext _context;
-        public LessonController(ILessonService lessonService,CourseContext context) {
+        public LessonController(ILessonService lessonService) {
             _lessonService = lessonService;
-            _context = context;
         }
         [HttpPost("create")]
         public  async Task<IActionResult> CreateLesson([FromForm] LessonDTO lessonModel)
@@ -39,6 +37,16 @@ namespace CourseService.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _lessonService.GetAll();
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
     }
 }
