@@ -71,6 +71,16 @@ namespace CourseService.Controllers
             }
             return BadRequest(result);
         }
-        
+        [HttpGet("GetActiveCourse")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public IActionResult GetActiveCourse()
+        {
+            var result = _courseService.GetActiceCourse();
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
     }
 }

@@ -83,7 +83,7 @@ namespace CourseService.Service.CoursesService
                             IsSuccess = false
                         };
                     }
-                    c.IsDeleted = true;
+                    c.IsActive = false;
                     c.UpdatedAt = DateTime.UtcNow;
                     _context.Courses.Update(c);
                     var numberChange = await _context.SaveChangesAsync();
@@ -111,6 +111,36 @@ namespace CourseService.Service.CoursesService
                 Message = $"Unauthorized",
                 IsSuccess = false
             }; ;
+        }
+
+        public async Task<List<CourseDTO>> GetActiceCourse()
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var courses = _context.Courses.Where(x => x.IsActive == true).ToList();
+                    List<CourseDTO> result = new List<CourseDTO>();
+                    foreach (var course in courses)
+                    {
+                        CourseDTO courseDTO = new CourseDTO
+                        {
+                            Name = course.Name,
+                            Id = course.Id,
+                        };
+                        result.Add(courseDTO);
+                    }
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+            }
+            return null;
         }
 
         public List<CourseDTO> GetAll()

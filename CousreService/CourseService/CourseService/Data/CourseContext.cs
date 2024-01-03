@@ -1,5 +1,7 @@
 ﻿using CourseService.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Metadata;
 using System.Security.Claims;
 
 namespace CourseService.Data
@@ -16,6 +18,8 @@ namespace CourseService.Data
         public DbSet<StudentCourse> StudentCourses { get; set; }
         public DbSet<Topic> Topics { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
+        public DbSet<TypeFile> TypeFiles { get; set; }
+        public DbSet<Documents> Documents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -40,7 +44,35 @@ namespace CourseService.Data
                 .HasOne(l => l.Topics)
                 .WithMany(tp => tp.Lessons)
                 .HasForeignKey(l => l.TopicId);
+            modelBuilder.Entity<Lesson>()
+                .HasOne(ty => ty.TypeFile)
+                .WithMany(ty => ty.Lessons)
+                .HasForeignKey(ty => ty.TypeId);
+            modelBuilder.Entity<Lesson>()
+            .HasOne(l => l.Document)
+            .WithOne(d => d.Lesson)
+            .HasForeignKey<Lesson>(d => d.DocumentId);
+
+            
+            SeedType(modelBuilder);
         }
 
+        private void SeedType(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<TypeFile>().HasData(
+               new TypeFile()
+               {
+                   Id=Guid.NewGuid().ToString(),
+                   Name="Documents"
+               },
+               new TypeFile()
+               {
+                   Id = Guid.NewGuid().ToString(),
+                   Name = "Slides"
+               }
+               
+               );
+        }
+    
     }
 }

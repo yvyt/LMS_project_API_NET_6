@@ -4,6 +4,7 @@ using CourseService.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseService.Migrations
 {
     [DbContext(typeof(CourseContext))]
-    partial class CourseContextModelSnapshot : ModelSnapshot
+    [Migration("20240103131543_updateDocumentTB")]
+    partial class updateDocumentTB
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -116,6 +118,10 @@ namespace CourseService.Migrations
                     b.Property<string>("ContentType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("FileContent")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("FileName")
                         .IsRequired()
@@ -261,12 +267,12 @@ namespace CourseService.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "a9ada079-a177-4f9b-b30b-cfc599e76f44",
+                            Id = "c3769f7e-6c37-417c-a734-62411ab32cc5",
                             Name = "Documents"
                         },
                         new
                         {
-                            Id = "d68cbea0-20a6-4295-a6d5-a96cca86dc22",
+                            Id = "dc84389b-980c-4399-bdd3-32e2b1bd1cb3",
                             Name = "Slides"
                         });
                 });

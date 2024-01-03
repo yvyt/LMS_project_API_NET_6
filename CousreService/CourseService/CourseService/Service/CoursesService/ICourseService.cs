@@ -11,5 +11,6 @@ namespace CourseService.Service.CoursesService
         public List<CourseDTO> GetAll();
         CourseDTO GetById(string id);
         Task<ManagerRespone> UpdateCourse(string id, CourseDTO course);
+        Task<List<CourseDTO>> GetActiceCourse();
     }
 }

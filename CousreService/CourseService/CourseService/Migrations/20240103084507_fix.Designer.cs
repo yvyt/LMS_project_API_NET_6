@@ -4,6 +4,7 @@ using CourseService.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseService.Migrations
 {
     [DbContext(typeof(CourseContext))]
-    partial class CourseContextModelSnapshot : ModelSnapshot
+    [Migration("20240103084507_fix")]
+    partial class fix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -106,30 +108,6 @@ namespace CourseService.Migrations
                     b.ToTable("Course");
                 });
 
-            modelBuilder.Entity("CourseService.Data.Documents", b =>
-                {
-                    b.Property<string>("DocumentId")
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("link")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("DocumentId");
-
-                    b.ToTable("Documents");
-                });
-
             modelBuilder.Entity("CourseService.Data.Lesson", b =>
                 {
                     b.Property<string>("Id")
@@ -140,15 +118,15 @@ namespace CourseService.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("DocumentId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(255)");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Link")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -161,7 +139,7 @@ namespace CourseService.Migrations
 
                     b.Property<string>("TypeId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -176,12 +154,7 @@ namespace CourseService.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DocumentId")
-                        .IsUnique();
-
                     b.HasIndex("TopicId");
-
-                    b.HasIndex("TypeId");
 
                     b.ToTable("Lesson");
                 });
@@ -243,34 +216,6 @@ namespace CourseService.Migrations
                     b.ToTable("Topic");
                 });
 
-            modelBuilder.Entity("CourseService.Data.TypeFile", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TypeFile");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "a9ada079-a177-4f9b-b30b-cfc599e76f44",
-                            Name = "Documents"
-                        },
-                        new
-                        {
-                            Id = "d68cbea0-20a6-4295-a6d5-a96cca86dc22",
-                            Name = "Slides"
-                        });
-                });
-
             modelBuilder.Entity("CourseService.Data.Classes", b =>
                 {
                     b.HasOne("CourseService.Data.Course", "Course")
@@ -284,29 +229,13 @@ namespace CourseService.Migrations
 
             modelBuilder.Entity("CourseService.Data.Lesson", b =>
                 {
-                    b.HasOne("CourseService.Data.Documents", "Document")
-                        .WithOne("Lesson")
-                        .HasForeignKey("CourseService.Data.Lesson", "DocumentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("CourseService.Data.Topic", "Topics")
                         .WithMany("Lessons")
                         .HasForeignKey("TopicId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CourseService.Data.TypeFile", "TypeFile")
-                        .WithMany("Lessons")
-                        .HasForeignKey("TypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Document");
-
                     b.Navigation("Topics");
-
-                    b.Navigation("TypeFile");
                 });
 
             modelBuilder.Entity("CourseService.Data.StudentCourse", b =>
@@ -343,18 +272,7 @@ namespace CourseService.Migrations
                     b.Navigation("Classes");
                 });
 
-            modelBuilder.Entity("CourseService.Data.Documents", b =>
-                {
-                    b.Navigation("Lesson")
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("CourseService.Data.Topic", b =>
-                {
-                    b.Navigation("Lessons");
-                });
-
-            modelBuilder.Entity("CourseService.Data.TypeFile", b =>
                 {
                     b.Navigation("Lessons");
                 });

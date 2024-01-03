@@ -39,7 +39,7 @@ namespace CourseService.Service.ClassesService
                     }
 
                     var course = await _context.Courses.FirstOrDefaultAsync(c => c.Id == classes.Course);
-                    if (course == null)
+                    if (course == null || course.IsActive == false)
                     {
                         return new ManagerRespone
                         {
@@ -118,31 +118,30 @@ namespace CourseService.Service.ClassesService
                 {
                     var classes = _context.Classes.ToList();
                     List<ClassDTO> result = new List<ClassDTO>();
-                    string nameOfCourse = "";
-                    string nameTeacher = "";
+
                     foreach (var clazz in classes)
                     {
                         var courseName = _context.Courses.FirstOrDefault(c => c.Id == clazz.CourseId);
-                        if (courseName != null)
+                        if (courseName == null)
                         {
-                            nameOfCourse = courseName.Name;
+                            return null;
                         }
                         var TeacherName = await GetUsersFromUserServiceAsync(clazz.Teacher, accessToken);
-                        if (TeacherName != null)
+                        if (TeacherName == null)
                         {
-                            nameTeacher = TeacherName.Email;
+                            return null;
                         }
                         ClassDTO classDTO = new ClassDTO
                         {
-                            Id=clazz.Id,
-                            Course = nameOfCourse,
-                            Teacher = nameTeacher,
+                            Id = clazz.Id,
+                            Course = courseName.Name,
+                            Teacher = TeacherName.Email,
                             Name = clazz.Name,
                             Description = clazz.Description,
                         };
                         result.Add(classDTO);
                     }
-                                            return result;
+                    return result;
 
                 }
                 catch (Exception ex)
@@ -162,32 +161,29 @@ namespace CourseService.Service.ClassesService
             {
                 try
                 {
-                    var classes = await _context.Classes.FirstOrDefaultAsync(c=>c.Id==id);
-                    if(classes == null)
+                    var classes = await _context.Classes.FirstOrDefaultAsync(c => c.Id == id);
+                    if (classes == null)
                     {
                         return null;
                     }
-                    string nameOfCourse = "";
-                    string nameTeacher = "";
+
                     var courses = _context.Courses.FirstOrDefault(c => c.Id == classes.CourseId);
                     if (courses == null)
                     {
                         return null;
                     }
-                    nameOfCourse = courses.Name;
                     var teacher = await GetUsersFromUserServiceAsync(classes.Teacher, accessToken);
                     if (teacher == null)
                     {
-                        return null;                        
+                        return null;
                     }
-                    nameTeacher = teacher.Email;
                     ClassDTO classDTO = new ClassDTO
                     {
-                        Name=classes.Name,
-                        Course=nameOfCourse,
-                        Teacher=nameTeacher,
-                        Description=classes.Description,
-                        Id=classes.Id,
+                        Name = classes.Name,
+                        Course = courses.Name,
+                        Teacher = teacher.Email,
+                        Description = classes.Description,
+                        Id = classes.Id,
                     };
                     return classDTO;
                 }
@@ -199,7 +195,7 @@ namespace CourseService.Service.ClassesService
             return null;
         }
 
-        public async Task<ManagerRespone> EditClass(string id,ClassDTO classDTO)
+        public async Task<ManagerRespone> EditClass(string id, ClassDTO classDTO)
         {
             var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
@@ -208,7 +204,7 @@ namespace CourseService.Service.ClassesService
             {
                 try
                 {
-                    var cl= await _context.Classes.FirstOrDefaultAsync(x=> x.Id == id);
+                    var cl = await _context.Classes.FirstOrDefaultAsync(x => x.Id == id);
                     if (cl == null)
                     {
                         return new ManagerRespone
@@ -237,9 +233,9 @@ namespace CourseService.Service.ClassesService
                         };
                     }
                     cl.Name = classDTO.Name;
-                    cl.Teacher= classDTO.Teacher;
+                    cl.Teacher = classDTO.Teacher;
                     cl.CourseId = classDTO.Course;
-                    cl.Description=classDTO.Description;
+                    cl.Description = classDTO.Description;
                     _context.Classes.Update(cl);
                     int numberOfChanges = await _context.SaveChangesAsync();
                     if (numberOfChanges > 0)
@@ -291,7 +287,7 @@ namespace CourseService.Service.ClassesService
                         };
                     }
                     cl.IsActive = false;
-                    cl.UpdatedAt=DateTime.UtcNow;
+                    cl.UpdatedAt = DateTime.UtcNow;
                     _context.Classes.Update(cl);
                     int numberOfChanges = await _context.SaveChangesAsync();
                     if (numberOfChanges > 0)
@@ -333,27 +329,25 @@ namespace CourseService.Service.ClassesService
             {
                 try
                 {
-                    var classes = _context.Classes.Where(x=>x.IsActive==true).ToList();
+                    var classes = _context.Classes.Where(x => x.IsActive == true).ToList();
                     List<ClassDTO> result = new List<ClassDTO>();
-                    string nameOfCourse = "";
-                    string nameTeacher = "";
                     foreach (var clazz in classes)
                     {
                         var courseName = _context.Courses.FirstOrDefault(c => c.Id == clazz.CourseId);
-                        if (courseName != null)
+                        if (courseName == null)
                         {
-                            nameOfCourse = courseName.Name;
+                            return null;
                         }
                         var TeacherName = await GetUsersFromUserServiceAsync(clazz.Teacher, accessToken);
-                        if (TeacherName != null)
+                        if (TeacherName == null)
                         {
-                            nameTeacher = TeacherName.Email;
+                            return null;
                         }
                         ClassDTO classDTO = new ClassDTO
                         {
                             Id = clazz.Id,
-                            Course = nameOfCourse,
-                            Teacher = nameTeacher,
+                            Course = courseName.Name,
+                            Teacher = TeacherName.Email,
                             Name = clazz.Name,
                             Description = clazz.Description,
                         };

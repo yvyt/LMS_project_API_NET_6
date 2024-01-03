@@ -1,7 +1,10 @@
 using CourseService.Data;
 using CourseService.Service.ClassesService;
 using CourseService.Service.CoursesService;
+using CourseService.Service.DocumentService;
 using CourseService.Service.Extentions;
+using CourseService.Service.LessonService;
+using CourseService.Service.TopicService;
 using CourseService.Service.UserServiceClinet;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -72,6 +75,10 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 builder.Services.AddScoped<ICourseService,CourseServices>();
 builder.Services.AddScoped<IUserServiceClient, UserServiceClient>();
 builder.Services.AddScoped<IClassService, ClassesService>();
+builder.Services.AddScoped<ITopicService, TopicService>();
+builder.Services.AddScoped<ILessonService,LessonService>();
+builder.Services.AddScoped<IDocumentService, DocumentServices>();
+
 builder.Services.AddHttpClient<IUserServiceClient, UserServiceClient>();
 builder.Services.AddHttpContextAccessor();
 

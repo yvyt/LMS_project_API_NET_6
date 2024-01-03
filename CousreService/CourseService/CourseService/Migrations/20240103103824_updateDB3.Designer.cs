@@ -4,6 +4,7 @@ using CourseService.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseService.Migrations
 {
     [DbContext(typeof(CourseContext))]
-    partial class CourseContextModelSnapshot : ModelSnapshot
+    [Migration("20240103103824_updateDB3")]
+    partial class updateDB3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -117,11 +119,11 @@ namespace CourseService.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FileName")
+                    b.Property<byte[]>("FileContent")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("varbinary(max)");
 
-                    b.Property<string>("link")
+                    b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -261,12 +263,12 @@ namespace CourseService.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "a9ada079-a177-4f9b-b30b-cfc599e76f44",
+                            Id = "10873fbc-486c-4103-bbad-86c79106a652",
                             Name = "Documents"
                         },
                         new
                         {
-                            Id = "d68cbea0-20a6-4295-a6d5-a96cca86dc22",
+                            Id = "d8e47b1b-92c2-495f-a506-e60e78af6582",
                             Name = "Slides"
                         });
                 });

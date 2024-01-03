@@ -146,6 +146,7 @@ namespace UserService.Controller
                 Message = "Don't have user with: " + token
             });
         }
+        
     }
   
 }

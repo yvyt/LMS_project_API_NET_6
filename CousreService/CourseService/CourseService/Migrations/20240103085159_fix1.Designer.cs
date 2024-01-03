@@ -4,6 +4,7 @@ using CourseService.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseService.Migrations
 {
     [DbContext(typeof(CourseContext))]
-    partial class CourseContextModelSnapshot : ModelSnapshot
+    [Migration("20240103085159_fix1")]
+    partial class fix1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -106,30 +108,6 @@ namespace CourseService.Migrations
                     b.ToTable("Course");
                 });
 
-            modelBuilder.Entity("CourseService.Data.Documents", b =>
-                {
-                    b.Property<string>("DocumentId")
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("link")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("DocumentId");
-
-                    b.ToTable("Documents");
-                });
-
             modelBuilder.Entity("CourseService.Data.Lesson", b =>
                 {
                     b.Property<string>("Id")
@@ -140,15 +118,15 @@ namespace CourseService.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("DocumentId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(255)");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Link")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -175,9 +153,6 @@ namespace CourseService.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DocumentId")
-                        .IsUnique();
 
                     b.HasIndex("TopicId");
 
@@ -261,12 +236,12 @@ namespace CourseService.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "a9ada079-a177-4f9b-b30b-cfc599e76f44",
+                            Id = "5053ab40-feab-48ce-99fc-752f6b87e812",
                             Name = "Documents"
                         },
                         new
                         {
-                            Id = "d68cbea0-20a6-4295-a6d5-a96cca86dc22",
+                            Id = "91280a33-3963-459d-838c-bf427e3d16e7",
                             Name = "Slides"
                         });
                 });
@@ -284,12 +259,6 @@ namespace CourseService.Migrations
 
             modelBuilder.Entity("CourseService.Data.Lesson", b =>
                 {
-                    b.HasOne("CourseService.Data.Documents", "Document")
-                        .WithOne("Lesson")
-                        .HasForeignKey("CourseService.Data.Lesson", "DocumentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("CourseService.Data.Topic", "Topics")
                         .WithMany("Lessons")
                         .HasForeignKey("TopicId")
@@ -301,8 +270,6 @@ namespace CourseService.Migrations
                         .HasForeignKey("TypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Document");
 
                     b.Navigation("Topics");
 
@@ -341,12 +308,6 @@ namespace CourseService.Migrations
             modelBuilder.Entity("CourseService.Data.Course", b =>
                 {
                     b.Navigation("Classes");
-                });
-
-            modelBuilder.Entity("CourseService.Data.Documents", b =>
-                {
-                    b.Navigation("Lesson")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("CourseService.Data.Topic", b =>
