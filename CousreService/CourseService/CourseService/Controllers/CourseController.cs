@@ -73,9 +73,9 @@ namespace CourseService.Controllers
         }
         [HttpGet("GetActiveCourse")]
         [Authorize(AuthenticationSchemes = "Bearer")]
-        public IActionResult GetActiveCourse()
+        public async Task<IActionResult> GetActiveCourse()
         {
-            var result = _courseService.GetActiceCourse();
+            var result = await _courseService.GetActiceCourse();
             if (result != null)
             {
                 return Ok(result);

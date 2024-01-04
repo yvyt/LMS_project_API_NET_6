@@ -236,6 +236,7 @@ namespace CourseService.Service.ClassesService
                     cl.Teacher = classDTO.Teacher;
                     cl.CourseId = classDTO.Course;
                     cl.Description = classDTO.Description;
+                    cl.UpdatedAt = DateTime.Now;
                     _context.Classes.Update(cl);
                     int numberOfChanges = await _context.SaveChangesAsync();
                     if (numberOfChanges > 0)
@@ -287,7 +288,7 @@ namespace CourseService.Service.ClassesService
                         };
                     }
                     cl.IsActive = false;
-                    cl.UpdatedAt = DateTime.UtcNow;
+                    cl.UpdatedAt = DateTime.Now;
                     _context.Classes.Update(cl);
                     int numberOfChanges = await _context.SaveChangesAsync();
                     if (numberOfChanges > 0)

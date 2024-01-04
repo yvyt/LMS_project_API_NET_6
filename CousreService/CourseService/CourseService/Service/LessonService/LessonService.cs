@@ -49,7 +49,7 @@ namespace CourseService.Service.LessonService
                         };
                     }
                     var classes = await _context.Classes.FirstOrDefaultAsync(c => c.Id == topic.ClassId);
-                    string path = $"Upload/Lesson/{classes.Name}/{topic.Name}";
+                    string path = $"Upload/{classes.Name}/{topic.Name}/Lesson";
                     var document = await _documenService.UploadFile(lessonDTO, path);
                     if (document == null)
                     {
@@ -212,7 +212,7 @@ namespace CourseService.Service.LessonService
                     {
                         return new ManagerRespone
                         {
-                            Message = $"Don't exist lesson with id={less}",
+                            Message = $"Don't exist lesson with id={id}",
                             IsSuccess = false
                         };
                     }
@@ -243,25 +243,9 @@ namespace CourseService.Service.LessonService
                             IsSuccess = false
                         };
                     }
-                    int r=DeleteFile(d.link);
-                    if (r == 0)
-                    {
-                        return new ManagerRespone
-                        {
-                            Message = $"File at path {d.link} does not exist.",
-                            IsSuccess = false
-                        };
-                    }
-                    if (r == -1)
-                    {
-                        return new ManagerRespone
-                        {
-                            Message = $"An error occurred while deleting the file",
-                            IsSuccess = false
-                        };
-                    }
+                    
                     var classes = await _context.Classes.FirstOrDefaultAsync(c => c.Id == topic.ClassId);
-                    string path = $"Upload/Lesson/{classes.Name}/{topic.Name}";
+                    string path = $"Upload/{classes.Name}/{topic.Name}/Lesson";
                     var document = await _documenService.UploadFile(lessonDTO, path);
                     if (document == null)
                     {
@@ -271,13 +255,12 @@ namespace CourseService.Service.LessonService
                             IsSuccess = false,
                         };
                     }
-
                     less.Title = lessonDTO.Title;
                     less.DocumentId = document.DocumentId;
                     less.TopicId = topic.Id;
                     less.TypeId = type.Id;
                     less.updateBy = user.Id;
-                    less.UpdatedAt = DateTime.UtcNow;
+                    less.UpdatedAt = DateTime.Now;
                     _context.Lessons.Update(less);
                     int number = await _context.SaveChangesAsync();
                     if (number == 0)
@@ -287,6 +270,11 @@ namespace CourseService.Service.LessonService
                             Message = $"Error when update lesson",
                             IsSuccess = false,
                         };
+                    }
+                    var dele = await _documenService.Delete(d);
+                    if (dele.IsSuccess == false)
+                    {
+                        return dele;
                     }
                     return new ManagerRespone
                     {
@@ -310,25 +298,7 @@ namespace CourseService.Service.LessonService
             };
         }
 
-        private int DeleteFile(string link)
-        {
-            try
-            {
-                if (File.Exists(link))
-                {
-                    File.Delete(link);
-                    return 1;
-                }
-                else
-                {
-                    return 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                return -1;
-            }
-        }
+        
 
         public async Task<ManagerRespone> DeleteLesson(string id)
         {
@@ -351,7 +321,7 @@ namespace CourseService.Service.LessonService
 
 
                     less.IsActive = false;
-                    less.UpdatedAt=DateTime.UtcNow;
+                    less.UpdatedAt=DateTime.Now;
                     _context.Lessons.Update(less);
                     int number = await _context.SaveChangesAsync();
                     if (number == 0)

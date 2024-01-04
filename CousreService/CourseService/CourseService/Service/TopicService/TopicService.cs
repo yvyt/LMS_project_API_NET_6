@@ -301,7 +301,7 @@ namespace CourseService.Service.TopicService
 
                     }
                     topic.IsActive = false;
-                    topic.UpdatedAt = DateTime.UtcNow;
+                    topic.UpdatedAt = DateTime.Now;
                     _context.Topics.Update(topic);
                     var number = await _context.SaveChangesAsync();
                     if (number == 0)

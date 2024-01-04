@@ -84,7 +84,7 @@ namespace CourseService.Service.CoursesService
                         };
                     }
                     c.IsActive = false;
-                    c.UpdatedAt = DateTime.UtcNow;
+                    c.UpdatedAt = DateTime.Now;
                     _context.Courses.Update(c);
                     var numberChange = await _context.SaveChangesAsync();
                     if (numberChange > 0)
@@ -220,7 +220,7 @@ namespace CourseService.Service.CoursesService
                         };
                     }
                     courses.Name = course.Name;
-                    courses.UpdatedAt = DateTime.UtcNow;
+                    courses.UpdatedAt = DateTime.Now;
                     _context.Courses.Update(courses);
                     var numberColumnsChange = await _context.SaveChangesAsync();
                     if (numberColumnsChange > 0)

@@ -1,18 +1,54 @@
 ﻿using CourseService.Data;
 using CourseService.Model;
-using Microsoft.Win32.SafeHandles;
-using System.Reflection.Metadata;
+using UserService.Model;
 
 namespace CourseService.Service.DocumentService
 {
     public class DocumentServices : IDocumentService
     {
         private CourseContext _context;
-        public DocumentServices(CourseContext context) {
+        public DocumentServices(CourseContext context)
+        {
             _context = context;
         }
 
-        public async Task<Documents> UploadFile(LessonDTO lessonModel,string path)
+        public async Task<ManagerRespone> Delete(Documents d)
+        {
+
+            try
+            {
+                if (File.Exists(d.link))
+                {
+                    File.Delete(d.link);
+                    _context.Documents.Remove(d);
+                    await _context.SaveChangesAsync();
+                    return new ManagerRespone
+                    {
+                        Message="Delete Success",
+                        IsSuccess=true,
+                    };
+                }
+                else
+                {
+                    return new ManagerRespone
+                    {
+                        Message = "Don't exist file path",
+                        IsSuccess = false,
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ManagerRespone
+                {
+                    Message = $"Error {ex.StackTrace}",
+                    IsSuccess = false,
+                };
+            }
+
+        }
+
+        public async Task<Documents> UploadFile(LessonDTO lessonModel, string path)
         {
             if (!Directory.Exists(path))
             {
@@ -40,9 +76,9 @@ namespace CourseService.Service.DocumentService
             {
                 return null;
             }
-           
+
             return document;
         }
-      
+
     }
 }
