@@ -97,5 +97,15 @@ namespace CourseService.Controllers
             }
             return BadRequest(result);
         }
+        [HttpGet("GetById")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var result = await _lessonService.GetById(id);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
     }
 }

@@ -11,6 +11,7 @@ namespace CourseService.Service.LessonService
         Task<ManagerRespone> EditLesson(string id, LessonDTO lessonDTO);
         Task<List<LessonDTO>> GetActiveLesson();
         Task<List<LessonDTO>> GetAll();
+        Task<LessonDTO> GetById(string id);
         Task<List<LessonDTO>> GetByTopic(string id);
     }
 }

@@ -243,7 +243,7 @@ namespace CourseService.Service.LessonService
                             IsSuccess = false
                         };
                     }
-                    
+
                     var classes = await _context.Classes.FirstOrDefaultAsync(c => c.Id == topic.ClassId);
                     string path = $"Upload/{classes.Name}/{topic.Name}/Lesson";
                     var document = await _documenService.UploadFile(lessonDTO, path);
@@ -298,7 +298,7 @@ namespace CourseService.Service.LessonService
             };
         }
 
-        
+
 
         public async Task<ManagerRespone> DeleteLesson(string id)
         {
@@ -321,7 +321,7 @@ namespace CourseService.Service.LessonService
 
 
                     less.IsActive = false;
-                    less.UpdatedAt=DateTime.Now;
+                    less.UpdatedAt = DateTime.Now;
                     _context.Lessons.Update(less);
                     int number = await _context.SaveChangesAsync();
                     if (number == 0)
@@ -363,7 +363,7 @@ namespace CourseService.Service.LessonService
             {
                 try
                 {
-                    var lessons = _context.Lessons.Where(l=>l.IsActive==true).ToList();
+                    var lessons = _context.Lessons.Where(l => l.IsActive == true).ToList();
                     if (lessons == null)
                     {
                         return null;
@@ -399,6 +399,50 @@ namespace CourseService.Service.LessonService
                 }
             }
             return null;
+        }
+
+        public async Task<LessonDTO> GetById(string id)
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+
+                    var lessons = await _context.Lessons.FirstOrDefaultAsync(l => l.Id == id);
+                    if (lessons == null)
+                    {
+                        return null;
+                    }
+
+                    var topic = await _context.Topics.FirstOrDefaultAsync(cl => cl.Id ==lessons.TopicId);
+                    if (topic == null)
+                    {
+                        return null;
+                    }
+                    var typ = await _context.TypeFiles.FirstOrDefaultAsync(t => t.Id == lessons.TypeId);
+                    if (typ == null)
+                    {
+                        return null;
+                    }
+                    LessonDTO lessonDTO = new LessonDTO
+                    {
+                        Id = lessons.Id,
+                        Topic = topic.Name,
+                        Title = lessons.Title,
+                        Type = typ.Name,
+                    };
+                    return lessonDTO;
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+            }
+            return null;
+
         }
     }
 }

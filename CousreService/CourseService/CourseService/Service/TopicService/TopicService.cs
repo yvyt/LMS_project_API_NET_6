@@ -238,6 +238,7 @@ namespace CourseService.Service.TopicService
                     }
                     topic.Name = topicDTO.Name;
                     topic.ClassId = topicDTO.Class;
+                    topic.UpdatedAt = DateTime.Now;
                     _context.Topics.Update(topic);
                     var number = await _context.SaveChangesAsync();
                     if (number == 0)
