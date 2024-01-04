@@ -48,5 +48,54 @@ namespace CourseService.Controllers
             }
             return BadRequest(result);
         }
+        [HttpGet("GetByTopic")]
+        public async Task<IActionResult> GetByTopic(string id)
+        {
+            var result = await _lessonService.GetByTopic(id);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpPut("EditTopic")]
+        public async Task<IActionResult> EditLesson(string id, [FromForm] LessonDTO lessonDTO)
+        {
+            try
+            {
+                var result = await _lessonService.EditLesson(id,lessonDTO);
+                if (result.IsSuccess)
+                {
+                    return Ok(result);
+
+                }
+                return BadRequest(result);
+
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpDelete("DeleteLesson")]
+        public async Task<IActionResult> DeleteLesson(string id)
+        {
+            var result = await _lessonService.DeleteLesson(id);
+            if(result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpGet("GetActiveLesson")]
+        public async Task<IActionResult> GetActive()
+        {
+            var result = await _lessonService.GetActiveLesson();
+            if (result!=null)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
     }
 }
