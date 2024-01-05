@@ -50,7 +50,7 @@ namespace CourseService.Service.LessonService
                     }
                     var classes = await _context.Classes.FirstOrDefaultAsync(c => c.Id == topic.ClassId);
                     string path = $"Upload/{classes.Name}/{topic.Name}/Lesson";
-                    var document = await _documenService.UploadFile(lessonDTO, path);
+                    var document = await _documenService.UploadFile(lessonDTO.FileContent, path);
                     if (document == null)
                     {
                         return new ManagerRespone
@@ -246,7 +246,7 @@ namespace CourseService.Service.LessonService
 
                     var classes = await _context.Classes.FirstOrDefaultAsync(c => c.Id == topic.ClassId);
                     string path = $"Upload/{classes.Name}/{topic.Name}/Lesson";
-                    var document = await _documenService.UploadFile(lessonDTO, path);
+                    var document = await _documenService.UploadFile(lessonDTO.FileContent, path);
                     if (document == null)
                     {
                         return new ManagerRespone

@@ -29,5 +29,7 @@ namespace CourseService.Data
 
         public virtual Classes Classes { get; set; }
         public virtual ICollection<Lesson> Lessons { get; set; }
+
+
     }
 }

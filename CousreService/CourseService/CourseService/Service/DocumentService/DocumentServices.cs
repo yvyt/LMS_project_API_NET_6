@@ -48,13 +48,13 @@ namespace CourseService.Service.DocumentService
 
         }
 
-        public async Task<Documents> UploadFile(LessonDTO lessonModel, string path)
+        public async Task<Documents> UploadFile(IFormFile file, string path)
         {
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
             }
-            var file = lessonModel.FileContent;
+            
 
             var document = new Documents
             {
@@ -80,5 +80,6 @@ namespace CourseService.Service.DocumentService
             return document;
         }
 
+        
     }
 }

@@ -1,49 +1,53 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Reflection.Metadata;
 
 namespace CourseService.Data
 {
-    [Table("Lesson")]
-
-    public class Lesson
+    [Table("Resource")]
+    public class Resources
     {
-
         [Key]
         [StringLength(255)]
         [Required]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
+
+        [StringLength(255)]
         [Required]
-        public string TopicId { get; set; }
+        public string Name { get; set; }
         [Required]
         public string TypeId { get; set; }
 
+
         [Required]
-        [MaxLength(255)]
-        public string Title { get; set; }
-      
+        public string LessonId { get; set; }
+
         [Required]
+        public bool Status { get; set; } = false;
+
+
+        [Required]
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         [Required]
 
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
-        [Required]
-        public bool IsActive { get; set; } = true;
-        [Required]
-        public bool IsDeleted { get; set; } = false;
         [Required]
         public string createBy { get; set; }
         [Required]
         public string updateBy { get; set; }
         [Required]
         public string DocumentId { get; set; }
-        public Documents Document { get; set; }
-        public virtual Topic Topics { get; set; }
+        [Required]
+        public bool IsActive { get; set; }=true;
 
-        public virtual TypeFile TypeFile { get; set; }
-        public virtual ICollection<Resources> Resources { get; set; }
+        [Required]
+        public bool IsDeleted { get; set; } = false;
+
+        // Navigation property
+        public virtual TypeFile Type { get; set; }
+        public virtual Lesson Lessons { get; set; }
+        public Documents Document { get; set; }
 
     }
-
 }

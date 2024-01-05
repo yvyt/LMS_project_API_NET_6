@@ -4,6 +4,7 @@ using CourseService.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseService.Migrations
 {
     [DbContext(typeof(CourseContext))]
-    partial class CourseContextModelSnapshot : ModelSnapshot
+    [Migration("20240104131547_updateTBResource")]
+    partial class updateTBResource
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -193,12 +195,9 @@ namespace CourseService.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DocumentId")
+                    b.Property<byte[]>("CreatedAt")
                         .IsRequired()
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("timestamp");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -208,6 +207,11 @@ namespace CourseService.Migrations
 
                     b.Property<string>("LessonId")
                         .IsRequired()
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Link")
+                        .IsRequired()
+                        .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("Name")
@@ -225,18 +229,11 @@ namespace CourseService.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("createBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("updateBy")
+                    b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DocumentId")
-                        .IsUnique();
 
                     b.HasIndex("LessonId");
 
@@ -358,12 +355,6 @@ namespace CourseService.Migrations
 
             modelBuilder.Entity("CourseService.Data.Resources", b =>
                 {
-                    b.HasOne("CourseService.Data.Documents", "Document")
-                        .WithOne("Resources")
-                        .HasForeignKey("CourseService.Data.Resources", "DocumentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("CourseService.Data.Lesson", "Lessons")
                         .WithMany("Resources")
                         .HasForeignKey("LessonId")
@@ -375,8 +366,6 @@ namespace CourseService.Migrations
                         .HasForeignKey("TypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Document");
 
                     b.Navigation("Lessons");
 
@@ -420,9 +409,6 @@ namespace CourseService.Migrations
             modelBuilder.Entity("CourseService.Data.Documents", b =>
                 {
                     b.Navigation("Lesson")
-                        .IsRequired();
-
-                    b.Navigation("Resources")
                         .IsRequired();
                 });
 

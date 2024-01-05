@@ -20,7 +20,7 @@ namespace CourseService.Data
         public DbSet<Lesson> Lessons { get; set; }
         public DbSet<TypeFile> TypeFiles { get; set; }
         public DbSet<Documents> Documents { get; set; }
-
+        public DbSet<Resources> Resources { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -52,9 +52,14 @@ namespace CourseService.Data
             .HasOne(l => l.Document)
             .WithOne(d => d.Lesson)
             .HasForeignKey<Lesson>(d => d.DocumentId);
-
-            
-            SeedType(modelBuilder);
+            modelBuilder.Entity<Resources>()
+                .HasOne(r => r.Lessons)
+                .WithMany(r => r.Resources)
+                .HasForeignKey(r => r.LessonId);
+            modelBuilder.Entity<Resources>()
+                      .HasOne(l => l.Document)
+                      .WithOne(d => d.Resources);
+            //SeedType(modelBuilder);
         }
 
         private void SeedType(ModelBuilder modelBuilder)

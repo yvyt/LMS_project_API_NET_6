@@ -14,5 +14,6 @@ namespace CourseService.Data
         public string ContentType { get; set; }
         public string link {  get; set; }
         public Lesson Lesson { get; set; }
+        public Resources Resources { get; set; }
     }
 }

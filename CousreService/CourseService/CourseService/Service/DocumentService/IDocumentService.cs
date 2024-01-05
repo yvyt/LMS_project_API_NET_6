@@ -8,7 +8,6 @@ namespace CourseService.Service.DocumentService
     public interface IDocumentService
     {
         Task<ManagerRespone> Delete(Documents d);
-        Task<Documents> UploadFile(LessonDTO lessonModel,string path);
-
+        Task<Documents> UploadFile(IFormFile file,string path);
     }
 }
