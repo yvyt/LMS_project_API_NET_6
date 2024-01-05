@@ -1,5 +1,4 @@
 ﻿using CourseService.Data;
-using CourseService.Model;
 using UserService.Model;
 
 namespace CourseService.Service.DocumentService
@@ -24,8 +23,8 @@ namespace CourseService.Service.DocumentService
                     await _context.SaveChangesAsync();
                     return new ManagerRespone
                     {
-                        Message="Delete Success",
-                        IsSuccess=true,
+                        Message = "Delete Success",
+                        IsSuccess = true,
                     };
                 }
                 else
@@ -48,13 +47,72 @@ namespace CourseService.Service.DocumentService
 
         }
 
+        public async Task<ManagerRespone> Rename(string oldPath, string newPath)
+        {
+            try
+            {
+                Directory.Move(oldPath, newPath);
+
+                return new ManagerRespone
+                {
+                    Message = "Reaname success",
+                    IsSuccess = true,
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new ManagerRespone
+                {
+                    Message = $"Error while renaming folder: {ex.Message}",
+                    IsSuccess = false,
+                };
+                
+            }
+        }
+
+        public async Task<ManagerRespone> UpdateLink(Documents d, string oldPath,string newPath)
+        {
+            try
+            {
+                var path = d.link.Replace(oldPath, newPath);
+                d.link = path;
+                _context.Documents.Update(d);
+                int number = await _context.SaveChangesAsync();
+                if (number == 0)
+                {
+                    return new ManagerRespone
+                    {
+                        Message = "Error when update link to database",
+                        IsSuccess = false
+                    };
+
+                }
+                return new ManagerRespone
+                {
+                    Message = "Update link to database success",
+                    IsSuccess = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ManagerRespone
+                {
+                    Message = $"Error while renaming folder: {ex.Message}",
+                    IsSuccess = false,
+                };
+
+            }
+
+        }
+
         public async Task<Documents> UploadFile(IFormFile file, string path)
         {
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
             }
-            
+
 
             var document = new Documents
             {
@@ -80,6 +138,6 @@ namespace CourseService.Service.DocumentService
             return document;
         }
 
-        
+
     }
 }

@@ -1,5 +1,6 @@
 ﻿using CourseService.Data;
 using CourseService.Model;
+using CourseService.Service.DocumentService;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -12,12 +13,14 @@ namespace CourseService.Service.TopicService
         private CourseContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly HttpClient _httpClient;
+        private readonly IDocumentService _documenService;
 
-        public TopicService(CourseContext context, IHttpContextAccessor httpContext, HttpClient httpClient = null)
+        public TopicService(CourseContext context, IHttpContextAccessor httpContext, IDocumentService documentService,HttpClient httpClient = null)
         {
             _context = context;
             _httpContextAccessor = httpContext;
             _httpClient = httpClient;
+            _documenService = documentService;
         }
 
         public async Task<ManagerRespone> AddTopic(TopicDTO topicDTO)
@@ -216,9 +219,9 @@ namespace CourseService.Service.TopicService
             {
                 try
                 {
-                    
-                    Topic topic = await _context.Topics.FirstOrDefaultAsync(t=>t.Id==id);
-                    if(topic == null)
+
+                    Topic topic = await _context.Topics.FirstOrDefaultAsync(t => t.Id == id);
+                    if (topic == null)
                     {
                         return new ManagerRespone
                         {
@@ -236,26 +239,44 @@ namespace CourseService.Service.TopicService
                         };
 
                     }
-                    topic.Name = topicDTO.Name;
-                    topic.ClassId = topicDTO.Class;
-                    topic.UpdatedAt = DateTime.Now;
-                    _context.Topics.Update(topic);
-                    var number = await _context.SaveChangesAsync();
-                    if (number == 0)
+                    string oldPath = $"Upload/{classes.Name}/{topic.Name}";
+                    string newPath = $"Upload/{classes.Name}/{topicDTO.Name}";
+                    if (!oldPath.Equals(newPath))
                     {
+                        var rename = await _documenService.Rename(oldPath, newPath);
+                        if (rename.IsSuccess)
+                        {
+                            var documents = _context.Documents.Where(d => d.link.Contains(oldPath)).ToList();
+                            foreach (var d in documents)
+                            {
+                                var up = await _documenService.UpdateLink(d, oldPath, newPath);
+                                if (!up.IsSuccess)
+                                {
+                                    return up;
+                                }
+                            }
+                        }
+                        topic.Name = topicDTO.Name;
+                        topic.ClassId = topicDTO.Class;
+                        topic.UpdatedAt = DateTime.Now;
+                        _context.Topics.Update(topic);
+                        var number = await _context.SaveChangesAsync();
+                        if (number == 0)
+                        {
+                            return new ManagerRespone
+                            {
+                                Message = $"Error when update topic",
+                                IsSuccess = false,
+                            };
+                        }
                         return new ManagerRespone
                         {
-                            Message = $"Error when update topic",
-                            IsSuccess = false,
+                            Message = $"Successfully update {number} changes to the database.",
+                            IsSuccess = true,
                         };
                     }
-                    return new ManagerRespone
-                    {
-                        Message = $"Successfully update {number} changes to the database.",
-                        IsSuccess = true,
-                    };
-
                 }
+
                 catch (Exception ex)
                 {
                     // Handle exceptions appropriately

@@ -1,6 +1,8 @@
 ﻿using CourseService.Data;
 using CourseService.Model;
+using CourseService.Service.DocumentService;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using UserService.Model;
@@ -12,12 +14,14 @@ namespace CourseService.Service.ClassesService
         private CourseContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly HttpClient _httpClient;
+        private readonly IDocumentService _documenService;
 
-        public ClassesService(CourseContext context, IHttpContextAccessor httpContext, HttpClient httpClient = null)
+        public ClassesService(CourseContext context, IDocumentService documentService, IHttpContextAccessor httpContext, HttpClient httpClient = null)
         {
             _context = context;
             _httpContextAccessor = httpContext;
             _httpClient = httpClient;
+            _documenService = documentService;
         }
 
         public async Task<ManagerRespone> AddClasses(ClassDTO classes)
@@ -224,13 +228,30 @@ namespace CourseService.Service.ClassesService
                     }
 
                     var course = await _context.Courses.FirstOrDefaultAsync(c => c.Id == classDTO.Course);
-                    if (course == null)
+                    if (course == null || course.IsActive==false)
                     {
                         return new ManagerRespone
                         {
                             Message = $"Don't exist course with id= {classDTO.Course}.",
                             IsSuccess = false,
                         };
+                    }
+                    string oldPath = $"Upload/{cl.Name}";
+                    string newPath =$"Upload/{classDTO.Name}";
+                    if (!oldPath.Equals(newPath))
+                    {
+                        var rename= await _documenService.Rename(oldPath, newPath);
+                        if (rename.IsSuccess)
+                        {
+                            var documents = _context.Documents.Where(d => d.link.Contains(oldPath)).ToList();
+                            foreach(var d in documents){
+                               var up= await _documenService.UpdateLink(d,oldPath,newPath);
+                                if (!up.IsSuccess)
+                                {
+                                    return up;
+                                }
+                            }
+                        }
                     }
                     cl.Name = classDTO.Name;
                     cl.Teacher = classDTO.Teacher;

@@ -9,5 +9,7 @@ namespace CourseService.Service.DocumentService
     {
         Task<ManagerRespone> Delete(Documents d);
         Task<Documents> UploadFile(IFormFile file,string path);
+        Task<ManagerRespone> Rename(string oldPath,string newPath);
+        Task<ManagerRespone> UpdateLink(Documents d,string oldPath, string newPath);
     }
 }
