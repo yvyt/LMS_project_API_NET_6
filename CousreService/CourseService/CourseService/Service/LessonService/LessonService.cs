@@ -2,7 +2,7 @@
 using CourseService.Model;
 using CourseService.Service.DocumentService;
 using Microsoft.EntityFrameworkCore;
-using UserService.Model;
+using CourseService.Model;
 
 namespace CourseService.Service.LessonService
 {

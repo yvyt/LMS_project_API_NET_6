@@ -1,5 +1,5 @@
 ﻿using CourseService.Model;
-using UserService.Model;
+using CourseService.Model;
 
 namespace CourseService.Service.TopicService
 {

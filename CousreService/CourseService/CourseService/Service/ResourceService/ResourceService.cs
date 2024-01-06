@@ -3,7 +3,7 @@ using CourseService.Model;
 using CourseService.Service.DocumentService;
 using Microsoft.EntityFrameworkCore;
 using System.Resources;
-using UserService.Model;
+using CourseService.Model;
 
 namespace CourseService.Service.ResourceService
 {

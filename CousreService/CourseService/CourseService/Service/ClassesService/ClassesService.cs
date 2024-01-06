@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using UserService.Model;
+using CourseService.Model;
 
 namespace CourseService.Service.ClassesService
 {

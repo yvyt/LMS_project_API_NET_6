@@ -1,7 +1,7 @@
 ﻿using CourseService.Data;
 using CourseService.Model;
 using Microsoft.EntityFrameworkCore;
-using UserService.Model;
+using CourseService.Model;
 
 namespace CourseService.Service.CoursesService
 {

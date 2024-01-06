@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.IO;
-using UserService.Model;
+using CourseService.Model;
 
 namespace CourseService.Controllers
 {

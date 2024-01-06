@@ -3,11 +3,11 @@ using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json;
-using CourseService.Model;
+using ExamService.Model;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
-namespace CourseService.Service.UserServiceClinet
+namespace ExamService.Service.UserServiceClinet
 {
     public class UserServiceClient : IUserServiceClient
     {

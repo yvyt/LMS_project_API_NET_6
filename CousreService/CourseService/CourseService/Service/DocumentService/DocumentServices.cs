@@ -1,5 +1,6 @@
 ﻿using CourseService.Data;
-using UserService.Model;
+using CourseService.Model;
+using System.IO;
 
 namespace CourseService.Service.DocumentService
 {
@@ -10,6 +11,34 @@ namespace CourseService.Service.DocumentService
         {
             _context = context;
         }
+
+        public async Task<DocumentDTO> AddDocument(DocumentDTO d)
+        {
+            var document = new Documents
+            {
+                DocumentId = Guid.NewGuid().ToString(),
+                FileName = d.FileName,
+                ContentType = Path.GetExtension(d.FileName),
+                link=d.link
+            };
+
+            await _context.Documents.AddAsync(document);
+            int number = await _context.SaveChangesAsync();
+            if (number == 0)
+            {
+                return null;
+            }
+
+            return new DocumentDTO
+            {
+                DocumentId=document.DocumentId,
+                FileName = document.FileName,
+                ContentType = Path.GetExtension(document.FileName),
+                link=document.link
+            };
+        }
+
+        
 
         public async Task<ManagerRespone> Delete(Documents d)
         {

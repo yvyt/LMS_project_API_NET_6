@@ -4,7 +4,7 @@ using CourseService.Service.DocumentService;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using UserService.Model;
+using CourseService.Model;
 
 namespace CourseService.Service.TopicService
 {

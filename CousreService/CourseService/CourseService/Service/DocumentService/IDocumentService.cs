@@ -1,7 +1,7 @@
 ﻿using CourseService.Data;
 using CourseService.Model;
 using System.Reflection.Metadata;
-using UserService.Model;
+using CourseService.Model;
 
 namespace CourseService.Service.DocumentService
 {
@@ -11,5 +11,6 @@ namespace CourseService.Service.DocumentService
         Task<Documents> UploadFile(IFormFile file,string path);
         Task<ManagerRespone> Rename(string oldPath,string newPath);
         Task<ManagerRespone> UpdateLink(Documents d,string oldPath, string newPath);
+        Task<DocumentDTO> AddDocument(DocumentDTO d);
     }
 }

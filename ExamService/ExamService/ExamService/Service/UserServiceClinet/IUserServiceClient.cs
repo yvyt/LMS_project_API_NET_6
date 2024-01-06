@@ -1,6 +1,6 @@
-﻿using CourseService.Model;
+﻿using ExamService.Model;
 
-namespace CourseService.Service.UserServiceClinet
+namespace ExamService.Service.UserServiceClinet
 {
     public interface IUserServiceClient
     {

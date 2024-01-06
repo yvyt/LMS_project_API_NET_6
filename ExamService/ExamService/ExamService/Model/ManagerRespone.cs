@@ -1,4 +1,4 @@
-﻿namespace CourseService.Model
+﻿namespace ExamService.Model
 {
     public class ManagerRespone
     {
