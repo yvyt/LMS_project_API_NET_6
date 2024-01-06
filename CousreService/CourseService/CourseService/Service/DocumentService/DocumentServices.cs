@@ -1,6 +1,8 @@
 ﻿using CourseService.Data;
 using CourseService.Model;
+using Microsoft.EntityFrameworkCore;
 using System.IO;
+using System.Reflection.Metadata;
 
 namespace CourseService.Service.DocumentService
 {
@@ -76,6 +78,40 @@ namespace CourseService.Service.DocumentService
 
         }
 
+        public async Task<ManagerRespone> DeleteDocument(string id)
+        {
+            var doc = await _context.Documents.FirstOrDefaultAsync(d=>d.DocumentId == id);
+            if (doc == null)
+            {
+                return new ManagerRespone
+                {
+                    Message = $"Don't exist document with id={id}",
+                    IsSuccess = false,
+                };
+            }
+            _context.Documents.Remove(doc);
+            await _context.SaveChangesAsync();
+            return new ManagerRespone
+            {
+                Message = "Delete Success",
+                IsSuccess = true,
+            };
+        }
+        public async Task<DocumentDTO> GetById(string id)
+        {
+            var document = await _context.Documents.FirstOrDefaultAsync(x=>x.DocumentId == id);
+            if (document == null)
+            {
+                return null;
+            }
+            return new DocumentDTO
+            {
+                DocumentId = document.DocumentId,
+                FileName = document.FileName,
+                ContentType = Path.GetExtension(document.FileName),
+                link = document.link
+            };
+        }
         public async Task<ManagerRespone> Rename(string oldPath, string newPath)
         {
             try

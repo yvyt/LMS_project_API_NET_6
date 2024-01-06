@@ -1,17 +1,14 @@
 ﻿using ExamService.Data;
 using ExamService.Model;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using static System.Net.WebRequestMethods;
 namespace ExamService.Service.ExamService
 {
-    public class ExamServices:IExamService
+    public class ExamServices : IExamService
     {
-        public ExamsContext _context {  get; set; }
+        public ExamsContext _context { get; set; }
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly HttpClient _httpClient;
         public ExamServices(ExamsContext context, IHttpContextAccessor httpContext, HttpClient httpClient = null)
@@ -35,12 +32,12 @@ namespace ExamService.Service.ExamService
                     {
                         return new ManagerRespone
                         {
-                            Message = $"Don't exist course with id= {examDTO.Class}.",
+                            Message = $"Don't exist class with id= {examDTO.Class}.",
                             IsSuccess = false,
                         };
                     }
-                    var typ= await _context.ExamsType.FirstOrDefaultAsync(t=>t.Name == examDTO.Type);
-                    if(typ == null)
+                    var typ = await _context.ExamsType.FirstOrDefaultAsync(t => t.Name == examDTO.Type);
+                    if (typ == null)
                     {
                         return new ManagerRespone
                         {
@@ -49,7 +46,7 @@ namespace ExamService.Service.ExamService
                         };
                     }
                     var path = $"Upload/{classes.Name}/Exams/";
-                    var document = await UploadExamFileFromCourseServiceAsync(examDTO.FileContent, path,accessToken);
+                    var document = await UploadExamFileFromCourseServiceAsync(examDTO.FileContent, path, accessToken);
                     if (document == null)
                     {
                         return new ManagerRespone
@@ -70,7 +67,7 @@ namespace ExamService.Service.ExamService
                         updateBy = user.Id,
                         IsMutipleChoice = examDTO.IsMutipleChoice,
                         DateBegin = DateTime.Now,
-                        DocumentId=document.DocumentId
+                        DocumentId = document.DocumentId
                     };
                     await _context.Exams.AddAsync(ex);
                     int numberOfChanges = await _context.SaveChangesAsync();
@@ -138,9 +135,9 @@ namespace ExamService.Service.ExamService
             }
             DocumentDTO documentDTO = new DocumentDTO
             {
-                FileName=uniqueFileName,
+                FileName = uniqueFileName,
                 ContentType = Path.GetExtension(file.FileName),
-                Link=filePath
+                Link = filePath
             };
             var url = "https://localhost:44367/Document/AddDocment";
             var jsonContent = System.Text.Json.JsonSerializer.Serialize(documentDTO);
@@ -168,6 +165,367 @@ namespace ExamService.Service.ExamService
 
         }
 
+        public async Task<List<ExamDTO>> GetAll()
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var exams = _context.Exams.ToList();
+                    List<ExamDTO> result = new List<ExamDTO>();
+                    foreach (var exam in exams)
+                    {
+                        var classes = await GetClassFromClassServiceAsync(exam.ClassId, accessToken);
+                        if (classes == null)
+                        {
+                            return null;
+                        }
+                        var typ = await _context.ExamsType.FirstOrDefaultAsync(t => t.Id == exam.TypeId);
+                        if (typ == null)
+                        {
+                            return null;
+                        }
+                        ExamDTO examDTO = new ExamDTO
+                        {
+                            Id = exam.Id,
+                            Name = exam.Name,
+                            Type = typ.Name,
+                            Class = classes.Name,
+                            IsMutipleChoice = exam.IsMutipleChoice,
+                            NumberQuestion = exam.NumberQuestion,
+                        };
+                        result.Add(examDTO);
+                    }
+                    return result;
 
+                }
+                catch (Exception ex)
+                {
+                    // Handle exceptions appropriately
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        public async Task<ExamDTO> GetById(string id)
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var exam = await _context.Exams.FirstOrDefaultAsync(x => x.Id == id);
+                    if (exam == null)
+                    {
+                        return null;
+                    }
+
+                    var classes = await GetClassFromClassServiceAsync(exam.ClassId, accessToken);
+                    if (classes == null)
+                    {
+                        return null;
+                    }
+                    var typ = await _context.ExamsType.FirstOrDefaultAsync(t => t.Id == exam.TypeId);
+                    if (typ == null)
+                    {
+                        return null;
+                    }
+                    ExamDTO examDTO = new ExamDTO
+                    {
+                        Id = exam.Id,
+                        Name = exam.Name,
+                        Type = typ.Name,
+                        Class = classes.Name,
+                        IsMutipleChoice = exam.IsMutipleChoice,
+                        NumberQuestion = exam.NumberQuestion,
+                    };
+                    return examDTO;
+                }
+                catch (Exception ex)
+                {
+                    // Handle exceptions appropriately
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        public async Task<ManagerRespone> EditExam(ExamDTO examDTO)
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var exam= await _context.Exams.FirstOrDefaultAsync(e=>e.Id==examDTO.Id);
+                    if (exam == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist exam with id={examDTO.Id}",
+                            IsSuccess = false
+                        };
+                    }
+                    var classes = await GetClassFromClassServiceAsync(examDTO.Class, accessToken);
+                    if (classes == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist class with id= {examDTO.Class}.",
+                            IsSuccess = false,
+                        };
+                    }
+                    var typ = await _context.ExamsType.FirstOrDefaultAsync(t => t.Name == examDTO.Type);
+                    if (typ == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Only allow exam with type is 45 mitutes or 15 minutes",
+                            IsSuccess = false,
+                        };
+                    }
+                    var d= await GetDocumentFromDocumentServiceAsync(exam.DocumentId, accessToken);
+                    if (d == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't find document with path={d.Link}",
+                            IsSuccess = false
+                        };
+                    }
+                    var path = $"Upload/{classes.Name}/Exams/";
+                    var document = await GetDocumentFromDocumentServiceAsync(exam.DocumentId, accessToken);
+                    
+                    
+                    if (examDTO.FileContent != null)
+                    {
+                        document= await UploadExamFileFromCourseServiceAsync(examDTO.FileContent, path, accessToken);
+                        if (document == null)
+                        {
+                            return new ManagerRespone
+                            {
+                                Message = $"Failed to upload new exam",
+                                IsSuccess = false,
+                            };
+                        }
+                    }
+                    exam.Name = examDTO.Name != null ? examDTO.Name : exam.Name;
+                    exam.TypeId = typ.Id;
+                    exam.ClassId = classes.Id;
+                    exam.UserId = user.Id;
+                    exam.NumberQuestion = examDTO.NumberQuestion;
+                    exam.IsMutipleChoice = examDTO.IsMutipleChoice;
+                    exam.UpdatedAt = DateTime.Now;
+                    exam.updateBy=user.Id;
+                    exam.DocumentId = document.DocumentId;
+                    _context.Exams.Update(exam);
+                    int numberOfChanges = await _context.SaveChangesAsync();
+                    if (numberOfChanges == 0)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Error when update lesson",
+                            IsSuccess = false,
+                        };
+                    }
+
+                    if (examDTO.FileContent != null)
+                    {
+                        try
+                        {
+                            if (File.Exists(d.Link))
+                            {
+                                File.Delete(d.Link);
+                                var dele = await DeleteDocumentFromDocumentService(d.DocumentId, accessToken);
+                                if (!dele.IsSuccess)
+                                {
+                                    return new ManagerRespone
+                                    {
+                                        Message = "Error when delete old document",
+                                        IsSuccess = false,
+                                    };
+                                }
+                            }
+                            else
+                            {
+                                return new ManagerRespone
+                                {
+                                    Message = "Don't exist file path",
+                                    IsSuccess = false,
+                                };
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            return new ManagerRespone
+                            {
+                                Message = $"Error {ex.StackTrace}",
+                                IsSuccess = false,
+                            };
+                        }
+                        
+                        
+                    }
+                    return new ManagerRespone
+                    {
+                        Message = $"Successfully update {numberOfChanges} changes to the database.",
+                        IsSuccess = true,
+                    };
+
+                }
+                catch (Exception ex)
+                {
+                    // Handle exceptions appropriately
+                    return new ManagerRespone
+                    {
+                        Message = $"Error: {ex.Message}",
+                        IsSuccess = false,
+                    };
+                }
+            }
+            return new ManagerRespone
+            {
+                Message = $"Unthorize",
+                IsSuccess = false,
+            };
+        }
+
+        private async Task<ManagerRespone> DeleteDocumentFromDocumentService(string? documentId,string accessToken)
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            var response = await _httpClient.DeleteAsync($"https://localhost:44367/Document/DeleteDocument?id={documentId}");
+            if (response.IsSuccessStatusCode)
+            {
+                return new ManagerRespone
+                {
+                    IsSuccess = true,
+                };
+            }
+            return new ManagerRespone
+            {
+                IsSuccess = false
+            };
+        }
+
+        public async Task<DocumentDTO> GetDocumentFromDocumentServiceAsync(string id, string accessToken)
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            var response = await _httpClient.GetAsync($"https://localhost:44367/Document/GetById?id={id}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Deserialize the response content to your User class
+                var jsonContent = await response.Content.ReadAsStringAsync();
+                var document = System.Text.Json.JsonSerializer.Deserialize<DocumentDTO>(jsonContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                return document;
+            }
+            return null;
+        }
+
+        public async Task<ManagerRespone> DeleteExam(string id)
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var ex = await _context.Exams.FirstOrDefaultAsync(rs => rs.Id == id);
+                    if (ex == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist exam with id={id}",
+                            IsSuccess = false
+                        };
+                    }
+                    ex.IsActive = false;
+                    ex.UpdatedAt = DateTime.Now;
+                    _context.Exams.Update(ex);
+                    int number = await _context.SaveChangesAsync();
+                    if (number == 0)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Error when delete exam",
+                            IsSuccess = false,
+                        };
+                    }
+                    return new ManagerRespone
+                    {
+                        Message = $"Successfully delete exam",
+                        IsSuccess = true,
+                    };
+                }
+                catch (Exception ex)
+                {
+                    return new ManagerRespone
+                    {
+                        Message = $"Error when delete exam {ex.StackTrace}",
+                        IsSuccess = false
+                    };
+                }
+            }
+            return new ManagerRespone
+            {
+                Message = $"Unauthorize",
+                IsSuccess = false
+            };
+        }
+
+        public async Task<List<ExamDTO>> GetActive()
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var exams = _context.Exams.Where(x=>x.IsActive==true).ToList();
+                    List<ExamDTO> result = new List<ExamDTO>();
+                    foreach (var exam in exams)
+                    {
+                        var classes = await GetClassFromClassServiceAsync(exam.ClassId, accessToken);
+                        if (classes == null)
+                        {
+                            return null;
+                        }
+                        var typ = await _context.ExamsType.FirstOrDefaultAsync(t => t.Id == exam.TypeId);
+                        if (typ == null)
+                        {
+                            return null;
+                        }
+                        ExamDTO examDTO = new ExamDTO
+                        {
+                            Id = exam.Id,
+                            Name = exam.Name,
+                            Type = typ.Name,
+                            Class = classes.Name,
+                            IsMutipleChoice = exam.IsMutipleChoice,
+                            NumberQuestion = exam.NumberQuestion,
+                        };
+                        result.Add(examDTO);
+                    }
+                    return result;
+
+                }
+                catch (Exception ex)
+                {
+                    // Handle exceptions appropriately
+                    return null;
+                }
+            }
+            return null;
+        }
     }
 }

@@ -25,5 +25,25 @@ namespace CourseService.Controllers
             }
             return BadRequest(result);
         }
+        [HttpGet("GetById")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var result = await _documentService.GetById(id);
+            if(result != null )
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpDelete("DeleteDocument")]
+        public async Task<IActionResult> DeleteDocument(string id)
+        {
+            var result = await _documentService.DeleteDocument(id);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
     }
 }

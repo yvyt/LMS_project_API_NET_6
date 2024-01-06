@@ -12,5 +12,7 @@ namespace CourseService.Service.DocumentService
         Task<ManagerRespone> Rename(string oldPath,string newPath);
         Task<ManagerRespone> UpdateLink(Documents d,string oldPath, string newPath);
         Task<DocumentDTO> AddDocument(DocumentDTO d);
+        Task<DocumentDTO> GetById(string id);
+        Task<ManagerRespone> DeleteDocument(string id);
     }
 }
