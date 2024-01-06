@@ -351,5 +351,105 @@ namespace CourseService.Service.ResourceService
                 IsSuccess = false
             };
         }
+
+        public async Task<ManagerRespone> DeleteResource(string id)
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var res = await _context.Resources.FirstOrDefaultAsync(rs=>rs.Id==id);
+                    if (res == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist resource with id={id}",
+                            IsSuccess = false
+                        };
+                    }
+
+
+                    res.IsActive = false;
+                    res.UpdatedAt = DateTime.Now;
+                    _context.Resources.Update(res);
+                    int number = await _context.SaveChangesAsync();
+                    if (number == 0)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Error when delete resource",
+                            IsSuccess = false,
+                        };
+                    }
+                    return new ManagerRespone
+                    {
+                        Message = $"Successfully delete resource",
+                        IsSuccess = true,
+                    };
+                }
+                catch (Exception ex)
+                {
+                    return new ManagerRespone
+                    {
+                        Message = $"Error when delete resource {ex.StackTrace}",
+                        IsSuccess = false
+                    };
+                }
+            }
+            return new ManagerRespone
+            {
+                Message = $"Unauthorize",
+                IsSuccess = false
+            };
+        }
+
+        public async Task<List<ResourceDTO>> GetActive()
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var resources = _context.Resources.Where(r=>r.IsActive==true).ToList();
+                    if (resources == null)
+                    {
+                        return null;
+                    }
+                    List<ResourceDTO> r = new List<ResourceDTO>();
+                    foreach (var re in resources)
+                    {
+                        var lesson = await _context.Lessons.FirstOrDefaultAsync(cl => cl.Id == re.LessonId);
+                        if (lesson == null)
+                        {
+                            return null;
+                        }
+                        var typ = await _context.TypeFiles.FirstOrDefaultAsync(t => t.Id == re.TypeId);
+                        if (typ == null)
+                        {
+                            return null;
+                        }
+                        ResourceDTO res = new ResourceDTO
+                        {
+                            Id = re.Id,
+                            Lesson = lesson.Title,
+                            Type = typ.Name,
+                            Name = re.Name,
+                        };
+                        r.Add(res);
+                    }
+                    return r;
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+            }
+            return null;
+        }
     }
 }

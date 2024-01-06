@@ -314,7 +314,7 @@ namespace CourseService.Service.LessonService
                     {
                         return new ManagerRespone
                         {
-                            Message = $"Don't exist lesson with id={less}",
+                            Message = $"Don't exist lesson with id={id}",
                             IsSuccess = false
                         };
                     }

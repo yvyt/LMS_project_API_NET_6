@@ -67,5 +67,25 @@ namespace CourseService.Controllers
             }
             return BadRequest(result);
         }
+        [HttpDelete("DeleteResource")]
+        public async Task<IActionResult> DeleteResource(string id)
+        {
+            var result = await _resourceService.DeleteResource(id);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpGet("GetActiveResource")]
+        public async Task<IActionResult> GetActive()
+        {
+            var result = await _resourceService.GetActive();
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return  BadRequest(result);
+        }
     }
 }
