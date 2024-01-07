@@ -11,6 +11,8 @@ namespace ExamService.Data
         }
         public DbSet<Exam> Exams { get; set; }
         public DbSet<ExamType> ExamsType { get; set; }
+        public DbSet<Question> Question { get; set; }
+        public DbSet<Answer>   Answers { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -18,6 +20,11 @@ namespace ExamService.Data
                 .HasOne(e => e.Type)
                 .WithMany(e => e.Exams)
                 .HasForeignKey(e => e.TypeId);
+
+            modelBuilder.Entity<Answer>()
+                .HasOne(a => a.Question)
+                .WithMany(a => a.Answers)
+                .HasForeignKey(a => a.QuestionId);
             //SeedType(modelBuilder);
 
         }

@@ -1,6 +1,8 @@
 using ExamService.Data;
+using ExamService.Service.AnswerService;
 using ExamService.Service.ExamService;
 using ExamService.Service.Extentions;
+using ExamService.Service.QuestionService;
 using ExamService.Service.UserServiceClinet;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Cors.Infrastructure;
@@ -72,7 +74,8 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 });
 builder.Services.AddScoped<IUserServiceClient, UserServiceClient>();
 builder.Services.AddScoped<IExamService, ExamServices>();
-
+builder.Services.AddScoped<IQuestionService,QuestionService>();
+builder.Services.AddScoped<IAnswerService,AnswerService>();
 builder.Services.AddHttpClient<IUserServiceClient, UserServiceClient>();
 builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
