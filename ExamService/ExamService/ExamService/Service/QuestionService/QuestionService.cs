@@ -8,7 +8,7 @@ namespace ExamService.Service.QuestionService
 {
     public class QuestionService : IQuestionService
     {
-        private ExamsContext _context { get; set; }
+        private ExamsContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly HttpClient _httpClient;
         public QuestionService(ExamsContext context, IHttpContextAccessor httpContextAccessor, HttpClient httpClient)

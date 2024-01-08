@@ -22,7 +22,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
 {
-    option.SwaggerDoc("v1", new OpenApiInfo { Title = "Course API", Version = "v1" });
+    option.SwaggerDoc("v1", new OpenApiInfo { Title = "Exam API", Version = "v1" });
     option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -75,7 +75,7 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 builder.Services.AddScoped<IUserServiceClient, UserServiceClient>();
 builder.Services.AddScoped<IExamService, ExamServices>();
 builder.Services.AddScoped<IQuestionService,QuestionService>();
-builder.Services.AddScoped<IAnswerService,AnswerService>();
+builder.Services.AddScoped<IAnswerService,AnswerServices>();
 builder.Services.AddHttpClient<IUserServiceClient, UserServiceClient>();
 builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
