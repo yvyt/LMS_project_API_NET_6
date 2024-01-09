@@ -45,11 +45,11 @@ namespace ExamService.Data
 
         [Required]
         public DateTime DateBegin { get; set; } = DateTime.Now;
-        [Required]
-        public string DocumentId { get; set; }
+        public string? DocumentId { get; set; }
 
         // Navigation property
         public virtual ExamType Type { get; set; }
+        public virtual ICollection<ExamQuestion> ExamQuestions { get; set; }
 
     }
 }

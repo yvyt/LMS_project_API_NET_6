@@ -42,5 +42,7 @@ namespace ExamService.Data
 
 
         public virtual ICollection<Answer> Answers { get; set; }
+        public virtual ICollection<ExamQuestion> ExamQuestions { get; set; }
+
     }
 }

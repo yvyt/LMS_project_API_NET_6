@@ -46,14 +46,19 @@ namespace ExamService.Service.ExamService
                         };
                     }
                     var path = $"Upload/{classes.Name}/Exams/";
-                    var document = await UploadExamFileFromCourseServiceAsync(examDTO.FileContent, path, accessToken);
-                    if (document == null)
+                    var documentId = "";
+                    if (examDTO.FileContent != null)
                     {
-                        return new ManagerRespone
+                        var document = await UploadExamFileFromCourseServiceAsync(examDTO.FileContent, path, accessToken);
+                        if (document == null)
                         {
-                            Message = $"Failed to upload new exam",
-                            IsSuccess = false,
-                        };
+                            return new ManagerRespone
+                            {
+                                Message = $"Failed to upload new exam",
+                                IsSuccess = false,
+                            };
+                        }
+                        documentId = document.DocumentId;
                     }
                     Exam ex = new Exam
                     {
@@ -67,7 +72,7 @@ namespace ExamService.Service.ExamService
                         updateBy = user.Id,
                         IsMutipleChoice = examDTO.IsMutipleChoice,
                         DateBegin = DateTime.Now,
-                        DocumentId = document.DocumentId
+                        DocumentId = documentId,
                     };
                     await _context.Exams.AddAsync(ex);
                     int numberOfChanges = await _context.SaveChangesAsync();
@@ -262,7 +267,7 @@ namespace ExamService.Service.ExamService
             {
                 try
                 {
-                    var exam= await _context.Exams.FirstOrDefaultAsync(e=>e.Id==examDTO.Id);
+                    var exam = await _context.Exams.FirstOrDefaultAsync(e => e.Id == examDTO.Id);
                     if (exam == null)
                     {
                         return new ManagerRespone
@@ -289,22 +294,18 @@ namespace ExamService.Service.ExamService
                             IsSuccess = false,
                         };
                     }
-                    var d= await GetDocumentFromDocumentServiceAsync(exam.DocumentId, accessToken);
-                    if (d == null)
+                    var d = await GetDocumentFromDocumentServiceAsync(exam.DocumentId, accessToken);
+                    var link = "";
+                    var documentId = "";
+                    if (d != null)
                     {
-                        return new ManagerRespone
-                        {
-                            Message = $"Don't find document with path={d.Link}",
-                            IsSuccess = false
-                        };
+                        link = d.Link;
+                        documentId=d.DocumentId;
                     }
                     var path = $"Upload/{classes.Name}/Exams/";
-                    var document = await GetDocumentFromDocumentServiceAsync(exam.DocumentId, accessToken);
-                    
-                    
                     if (examDTO.FileContent != null)
                     {
-                        document= await UploadExamFileFromCourseServiceAsync(examDTO.FileContent, path, accessToken);
+                        var document = await UploadExamFileFromCourseServiceAsync(examDTO.FileContent, path, accessToken);
                         if (document == null)
                         {
                             return new ManagerRespone
@@ -313,6 +314,7 @@ namespace ExamService.Service.ExamService
                                 IsSuccess = false,
                             };
                         }
+                        documentId = document.DocumentId;
                     }
                     exam.Name = examDTO.Name != null ? examDTO.Name : exam.Name;
                     exam.TypeId = typ.Id;
@@ -321,8 +323,9 @@ namespace ExamService.Service.ExamService
                     exam.NumberQuestion = examDTO.NumberQuestion;
                     exam.IsMutipleChoice = examDTO.IsMutipleChoice;
                     exam.UpdatedAt = DateTime.Now;
-                    exam.updateBy=user.Id;
-                    exam.DocumentId = document.DocumentId;
+                    exam.updateBy = user.Id;
+                    
+                    exam.DocumentId = d == null ? null :documentId ;
                     _context.Exams.Update(exam);
                     int numberOfChanges = await _context.SaveChangesAsync();
                     if (numberOfChanges == 0)
@@ -338,9 +341,9 @@ namespace ExamService.Service.ExamService
                     {
                         try
                         {
-                            if (File.Exists(d.Link))
+                            if (File.Exists(link))
                             {
-                                File.Delete(d.Link);
+                                File.Delete(link);
                                 var dele = await DeleteDocumentFromDocumentService(d.DocumentId, accessToken);
                                 if (!dele.IsSuccess)
                                 {
@@ -368,8 +371,8 @@ namespace ExamService.Service.ExamService
                                 IsSuccess = false,
                             };
                         }
-                        
-                        
+
+
                     }
                     return new ManagerRespone
                     {
@@ -395,7 +398,7 @@ namespace ExamService.Service.ExamService
             };
         }
 
-        private async Task<ManagerRespone> DeleteDocumentFromDocumentService(string? documentId,string accessToken)
+        private async Task<ManagerRespone> DeleteDocumentFromDocumentService(string? documentId, string accessToken)
         {
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             var response = await _httpClient.DeleteAsync($"https://localhost:44367/Document/DeleteDocument?id={documentId}");
@@ -491,7 +494,7 @@ namespace ExamService.Service.ExamService
             {
                 try
                 {
-                    var exams = _context.Exams.Where(x=>x.IsActive==true).ToList();
+                    var exams = _context.Exams.Where(x => x.IsActive == true).ToList();
                     List<ExamDTO> result = new List<ExamDTO>();
                     foreach (var exam in exams)
                     {

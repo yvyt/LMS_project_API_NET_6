@@ -83,7 +83,6 @@ namespace ExamService.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DocumentId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
@@ -126,6 +125,47 @@ namespace ExamService.Migrations
                     b.HasIndex("TypeId");
 
                     b.ToTable("Exam");
+                });
+
+            modelBuilder.Entity("ExamService.Data.ExamQuestion", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExamId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("QuestionId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("createBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("updateBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamId");
+
+                    b.HasIndex("QuestionId");
+
+                    b.ToTable("ExamQuestion");
                 });
 
             modelBuilder.Entity("ExamService.Data.ExamType", b =>
@@ -215,6 +255,30 @@ namespace ExamService.Migrations
                     b.Navigation("Type");
                 });
 
+            modelBuilder.Entity("ExamService.Data.ExamQuestion", b =>
+                {
+                    b.HasOne("ExamService.Data.Exam", "Exam")
+                        .WithMany("ExamQuestions")
+                        .HasForeignKey("ExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ExamService.Data.Question", "Question")
+                        .WithMany("ExamQuestions")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Exam");
+
+                    b.Navigation("Question");
+                });
+
+            modelBuilder.Entity("ExamService.Data.Exam", b =>
+                {
+                    b.Navigation("ExamQuestions");
+                });
+
             modelBuilder.Entity("ExamService.Data.ExamType", b =>
                 {
                     b.Navigation("Exams");
@@ -223,6 +287,8 @@ namespace ExamService.Migrations
             modelBuilder.Entity("ExamService.Data.Question", b =>
                 {
                     b.Navigation("Answers");
+
+                    b.Navigation("ExamQuestions");
                 });
 #pragma warning restore 612, 618
         }

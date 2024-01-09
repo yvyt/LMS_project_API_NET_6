@@ -1,5 +1,6 @@
 using ExamService.Data;
 using ExamService.Service.AnswerService;
+using ExamService.Service.ExamQuestionService;
 using ExamService.Service.ExamService;
 using ExamService.Service.Extentions;
 using ExamService.Service.QuestionService;
@@ -76,6 +77,8 @@ builder.Services.AddScoped<IUserServiceClient, UserServiceClient>();
 builder.Services.AddScoped<IExamService, ExamServices>();
 builder.Services.AddScoped<IQuestionService,QuestionService>();
 builder.Services.AddScoped<IAnswerService,AnswerServices>();
+builder.Services.AddScoped<IExamQuestionService, ExamQuestionService>();
+
 builder.Services.AddHttpClient<IUserServiceClient, UserServiceClient>();
 builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
