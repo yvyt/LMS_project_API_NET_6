@@ -1,4 +1,5 @@
-﻿using ExamService.Model;
+﻿using ExamService.Data;
+using ExamService.Model;
 using ExamService.Service.ExamQuestionService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -39,6 +40,46 @@ namespace ExamService.Controllers
         {
             var result = await _service.GetByExam(examId);
             if (result != null)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpPut("EditExamQuestion")]
+        public async Task<IActionResult> EditExamQuestion([FromForm] ExamQuestionUpdateDTO examQuestionDTO)
+        {
+            var result = await _service.EditExamQuestion(examQuestionDTO);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpDelete("DeleteExamQuestion")]
+        public async Task<IActionResult> DeleteExamQuestion(string id)
+        {
+            var result = await _service.DeleteExamQuestion(id);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpGet("GetActive")]
+        public async Task<IActionResult> GetActive()
+        {
+            var result = await _service.GetActive();
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpPost("AddMoreQuestion")]
+        public async Task<IActionResult> AddMoreQuestion([FromForm] QuestionExamAdd examQuestionDTO)
+        {
+            var result = await _service.AddMoreQuestion(examQuestionDTO);
+            if (result.IsSuccess)
             {
                 return Ok(result);
             }

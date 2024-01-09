@@ -115,6 +115,303 @@ namespace ExamService.Service.ExamQuestionService
             };
         }
 
+        public async Task<ManagerRespone> AddMoreQuestion(QuestionExamAdd examQuestionDTO)
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    
+                    var exam = await _context.Exams.FirstOrDefaultAsync(x => x.Id == examQuestionDTO.Exam);
+                    if (exam == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist exam with id={examQuestionDTO.Exam}",
+                            IsSuccess = false,
+                        };
+                    }
+                    var numberOfNewQuestion = examQuestionDTO.Questions.Count;
+                    exam.NumberQuestion = exam.NumberQuestion + numberOfNewQuestion;
+                    exam.UpdatedAt=DateTime.Now;
+                    exam.updateBy = user.Id;
+                    _context.Exams.Update(exam);
+                    List<ExamQuestion> result = new List<ExamQuestion>();
+                    foreach (var q in examQuestionDTO.Questions)
+                    {
+                        var checkContain = _context.examQuestions.Where(qu => qu.ExamId==examQuestionDTO.Exam && qu.QuestionId.Contains(q) ).ToList();
+                        if (checkContain.Count > 0)
+                        {
+                            return new ManagerRespone
+                            {
+                                Message = $"Question: {q} has already exist in exam",
+                                IsSuccess = false,
+                            };
+                        }
+                    
+                        var question = await _context.Question.FirstOrDefaultAsync(qu => qu.Id == q);
+                        if (question == null)
+                        {
+                            return new ManagerRespone
+                            {
+                                Message = $"Don't exist question with id={q}",
+                                IsSuccess = false,
+                            };
+                        }
+                        
+                        ExamQuestion newEx = new ExamQuestion
+                        {
+                            ExamId = exam.Id,
+                            QuestionId = question.Id,
+                            createBy = user.Id,
+                            updateBy = user.Id,
+                        };
+                        result.Add(newEx);
+                    }
+                    await _context.examQuestions.AddRangeAsync(result);
+                    int number = await _context.SaveChangesAsync();
+                    if (number > 0)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Successfully saved {number} changes to the database.",
+                            IsSuccess = true,
+                        };
+                    }
+                    return new ManagerRespone
+                    {
+                        Message = $"Error when create new exam question.",
+                        IsSuccess = false,
+                    };
+
+                }
+                catch (Exception ex)
+                {
+                    // Handle exceptions appropriately
+                    return new ManagerRespone
+                    {
+                        Message = $"Error: {ex.Message}",
+                        IsSuccess = false,
+                    };
+                }
+            }
+            return new ManagerRespone
+            {
+                Message = $"Unthorize",
+                IsSuccess = false,
+            };
+        }
+
+        public async Task<ManagerRespone> DeleteExamQuestion(string id)
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var examQuestion = await _context.examQuestions.FirstOrDefaultAsync(x => x.Id == id);
+                    if (examQuestion == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist exam question with id= {id}.",
+                            IsSuccess = false,
+                        };
+                    }
+                    examQuestion.updateBy = user.Id;
+                    examQuestion.IsActive = false;
+                    examQuestion.UpdatedAt = DateTime.Now;                    
+                    _context.examQuestions.Update(examQuestion);
+                    int number = await _context.SaveChangesAsync();
+                    if (number > 0)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Successfully delete exam question",
+                            IsSuccess = true,
+                        };
+                    }
+                    return new ManagerRespone
+                    {
+                        Message = $"Error when delete exam question.",
+                        IsSuccess = false,
+                    };
+                }
+                catch (Exception ex)
+                {
+                    // Handle exceptions appropriately
+                    return new ManagerRespone
+                    {
+                        Message = $"Error: {ex.Message}",
+                        IsSuccess = false,
+                    };
+                }
+            }
+            return new ManagerRespone
+            {
+                Message = $"Unthorize",
+                IsSuccess = false,
+            };
+        }
+
+        public async Task<ManagerRespone> EditExamQuestion(ExamQuestionUpdateDTO examQuestionDTO)
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var examQuestion = await _context.examQuestions.FirstOrDefaultAsync(x => x.Id == examQuestionDTO.Id);
+                    if (examQuestion == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist exam question with id= {examQuestionDTO.Id}.",
+                            IsSuccess = false,
+                        };
+                    }
+                    var exam = await _context.Exams.FirstOrDefaultAsync(x => x.Id == examQuestion.ExamId);
+                    if (exam == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist exam with id= {examQuestion.ExamId}.",
+                            IsSuccess = false,
+                        };
+                    }
+                    var classes = await GetClassFromClassServiceAsync(examQuestionDTO.Class, accessToken);
+                    if (classes == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist class with id= {examQuestionDTO.Class}.",
+                            IsSuccess = false,
+                        };
+                    }
+                    var typ = await _context.ExamsType.FirstOrDefaultAsync(t => t.Name == examQuestionDTO.Type);
+                    if (typ == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Only allow exam with type is 45 mitutes or 15 minutes",
+                            IsSuccess = false,
+                        };
+                    }
+
+                    exam.Name = examQuestionDTO.Name;
+                    exam.TypeId = typ.Id;
+                    exam.ClassId = classes.Id;
+                    exam.UserId = user.Id;
+                    exam.NumberQuestion = examQuestionDTO.NumberQuestion;
+                    exam.updateBy = user.Id;
+                    exam.IsMutipleChoice = examQuestionDTO.IsMutipleChoice;
+                    exam.UpdatedAt = DateTime.Now;
+                    _context.Exams.Update(exam);
+                    var question = await _context.Question.FirstOrDefaultAsync(q => q.Id == examQuestionDTO.Questions);
+                    if(question==null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist question with id= {examQuestionDTO.Questions}.",
+                            IsSuccess = false,
+                        };
+                    }
+                    examQuestion.QuestionId = question.Id;
+                    examQuestion.UpdatedAt = DateTime.Now;
+                    examQuestion.updateBy = user.Id;
+                    _context.examQuestions.Update(examQuestion);
+                    int number = await _context.SaveChangesAsync();
+                    if (number > 0)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Successfully update {number} changes to the database.",
+                            IsSuccess = true,
+                        };
+                    }
+                    return new ManagerRespone
+                    {
+                        Message = $"Error when update exam question.",
+                        IsSuccess = false,
+                    };
+
+                }
+                catch (Exception ex)
+                {
+                    // Handle exceptions appropriately
+                    return new ManagerRespone
+                    {
+                        Message = $"Error: {ex.Message}",
+                        IsSuccess = false,
+                    };
+                }
+            }
+            return new ManagerRespone
+            {
+                Message = $"Unthorize",
+                IsSuccess = false,
+            };
+        }
+
+        public async Task<List<ExamQuestionUpdateDTO>> GetActive()
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    List<ExamQuestionUpdateDTO> result =new  List<ExamQuestionUpdateDTO>();
+                    var examQuestions = _context.examQuestions.Where(x=>x.IsActive==true).ToList();
+                    foreach(var examQuestion in examQuestions)
+                    {
+                        var exam = await _context.Exams.FirstOrDefaultAsync(x => x.Id == examQuestion.ExamId);
+                        if (exam == null)
+                        {
+                            return null;
+                        }
+                        var classes = await GetClassFromClassServiceAsync(exam.ClassId, accessToken);
+                        if (classes == null)
+                        {
+                            return null;
+                        }
+                        var typ = await _context.ExamsType.FirstOrDefaultAsync(t => t.Id == exam.TypeId);
+                        if (typ == null)
+                        {
+                            return null;
+                        }
+                        var question = await _context.Question.FirstOrDefaultAsync(q => q.Id == examQuestion.QuestionId);
+                        if (question == null)
+                        {
+                            return null;
+                        }
+                        ExamQuestionUpdateDTO examQuestionDTO = new ExamQuestionUpdateDTO
+                        {
+                            Id = examQuestion.Id,
+                            Name = exam.Name,
+                            Class = classes.Name,
+                            Type = typ.Name,
+                            IsMutipleChoice = exam.IsMutipleChoice,
+                            NumberQuestion = exam.NumberQuestion,
+                            Questions = question.ContentQuestion
+                        };
+                        result.Add(examQuestionDTO);
+                    }
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    // Handle exceptions appropriately
+                    return null;
+                }
+            }
+            return null;
+        }
+
         public async Task<ExamQuestionDTO> GetByExam(string examId)
         {
             var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");

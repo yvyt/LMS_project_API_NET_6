@@ -303,7 +303,7 @@ namespace ExamService.Service.ExamService
                         documentId=d.DocumentId;
                     }
                     var path = $"Upload/{classes.Name}/Exams/";
-                    if (examDTO.FileContent != null)
+                    if (d!=null && examDTO.FileContent != null)
                     {
                         var document = await UploadExamFileFromCourseServiceAsync(examDTO.FileContent, path, accessToken);
                         if (document == null)
@@ -337,7 +337,7 @@ namespace ExamService.Service.ExamService
                         };
                     }
 
-                    if (examDTO.FileContent != null)
+                    if (examDTO.FileContent != null && d!=null)
                     {
                         try
                         {
