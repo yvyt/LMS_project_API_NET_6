@@ -45,5 +45,15 @@ namespace CourseService.Controllers
             }
             return BadRequest(result);
         }
+        [HttpPut("UploadLink")]
+        public async Task<IActionResult> UpdateLink(string id,string oldPath,string newPath)
+        {
+            var result = await _documentService.UpdateLinkAsync(id,oldPath,newPath);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
     }
 }

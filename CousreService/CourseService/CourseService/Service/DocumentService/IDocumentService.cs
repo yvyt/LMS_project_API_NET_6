@@ -14,5 +14,6 @@ namespace CourseService.Service.DocumentService
         Task<DocumentDTO> AddDocument(DocumentDTO d);
         Task<DocumentDTO> GetById(string id);
         Task<ManagerRespone> DeleteDocument(string id);
+        Task<ManagerRespone> UpdateLinkAsync(string id, string oldPath, string newPath);
     }
 }

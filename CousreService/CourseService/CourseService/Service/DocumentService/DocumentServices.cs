@@ -171,6 +171,51 @@ namespace CourseService.Service.DocumentService
 
         }
 
+        public async Task<ManagerRespone> UpdateLinkAsync(string id, string oldPath, string newPath)
+        {
+            try
+            {
+                string newName = Path.GetFileName(newPath);
+                var d = await _context.Documents.FirstOrDefaultAsync(x => x.DocumentId == id);
+                if(d == null)
+                {
+                     return new ManagerRespone
+                    {
+                        Message = $"Don't exist document with id={id}",
+                        IsSuccess = false
+                    };
+                }
+                var path = d.link.Replace(oldPath, newPath);
+                d.link = path;
+                d.FileName = newName;
+                _context.Documents.Update(d);
+                int number = await _context.SaveChangesAsync();
+                if (number == 0)
+                {
+                    return new ManagerRespone
+                    {
+                        Message = "Error when update link to database",
+                        IsSuccess = false
+                    };
+
+                }
+                return new ManagerRespone
+                {
+                    Message = "Update link to database success",
+                    IsSuccess = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ManagerRespone
+                {
+                    Message = $"Error while renaming folder: {ex.Message}",
+                    IsSuccess = false,
+                };
+
+            }
+        }
+
         public async Task<Documents> UploadFile(IFormFile file, string path)
         {
             if (!Directory.Exists(path))
@@ -203,6 +248,9 @@ namespace CourseService.Service.DocumentService
             return document;
         }
 
+        
+
+        
 
     }
 }
