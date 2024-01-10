@@ -13,14 +13,11 @@ namespace PrivateFileService.Service.PrivateFileService
         public PrivateFileContext _context { get; set; }
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly HttpClient _httpClient;
-        private readonly IFileProvider _fileProvider;
-
-        public PrivateFileServices(PrivateFileContext context, IHttpContextAccessor httpContext, IFileProvider fileProvider, HttpClient httpClient = null)
+        public PrivateFileServices(PrivateFileContext context, IHttpContextAccessor httpContext, HttpClient httpClient = null)
         {
             _context = context;
             _httpContextAccessor = httpContext;
             _httpClient = httpClient;
-            _fileProvider = fileProvider;
         }
 
         public async Task<ManagerRespone> AddPrivateFile(PrivateFileUploadDTO privateFile)

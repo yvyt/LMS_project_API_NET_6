@@ -3,6 +3,7 @@ using CourseService.Model;
 using CourseService.Service.ResourceService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Http.Headers;
 
 namespace CourseService.Controllers
 {
@@ -86,6 +87,21 @@ namespace CourseService.Controllers
                 return Ok(result);
             }
             return  BadRequest(result);
+        }
+        [HttpGet("DownloadResource")]
+        public async Task<IActionResult> DownloadPF(string id)
+        {
+            var (fileStream, message) = await _resourceService.DownloadResource(id);
+            if (fileStream != null)
+            {
+                var contentDisposition = new ContentDispositionHeaderValue("attachment")
+                {
+                    FileName = message,
+                };
+                Response.Headers.Add("Content-Disposition", contentDisposition.ToString());
+                return File(fileStream, "application/octet-stream", message);
+            }
+            return BadRequest(message);
         }
     }
 }

@@ -451,5 +451,47 @@ namespace CourseService.Service.ResourceService
             }
             return null;
         }
+
+        public async Task<(Stream, string)> DownloadResource(string id)
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var file = await _context.Resources.FirstOrDefaultAsync(x => x.Id == id);
+                    if (file == null)
+                    {
+                        return (null, $"Don't exist resource with id={id}");
+                    }
+                    var document = await _context.Documents.FirstOrDefaultAsync(x=>x.DocumentId==file.DocumentId);
+                    var fileName = document.FileName;
+                    if (string.IsNullOrEmpty(fileName))
+                    {
+                        // You might want to customize the error handling
+                        return (null, $"File Name is Empty");
+                    }
+
+                    // Get the filePath
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), document.link);
+
+                    if (!File.Exists(filePath))
+                    {
+                        // You might want to customize the error handling
+                        return (null, $"File not found: {fileName}");
+                    }
+                    return (System.IO.File.OpenRead(filePath), document.FileName);
+
+
+                }
+                catch (Exception ex)
+                {
+                    // Handle exceptions appropriately
+                    return (null, $"Error '{ex.Message}' when download.");
+                }
+            }
+            return (null, $"Unthorize");
+        }
     }
 }

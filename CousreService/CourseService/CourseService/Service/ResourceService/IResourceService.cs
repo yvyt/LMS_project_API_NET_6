@@ -7,6 +7,7 @@ namespace CourseService.Service.ResourceService
     {
         Task<ManagerRespone> AddResouce(ResourceDTO resouceDTO);
         Task<ManagerRespone> DeleteResource(string id);
+        Task<(Stream,string)> DownloadResource(string id);
         Task<ManagerRespone> EditResource(ResourceDTO resourceDTO);
         Task<List<ResourceDTO>> GetActive();
         Task<List<ResourceDTO>> GetAll();
