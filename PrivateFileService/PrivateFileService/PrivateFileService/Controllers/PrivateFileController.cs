@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PrivateFileService.Data;
 using PrivateFileService.Model;
 using PrivateFileService.Service.PrivateFileService;
+using System.Net.Http.Headers;
 
 namespace PrivateFileService.Controllers
 {
@@ -54,6 +55,41 @@ namespace PrivateFileService.Controllers
                 return Ok(result);
             }
             return BadRequest(result);
+        }
+        [HttpDelete("DeletePF")]
+        public async Task<IActionResult> DeletePF(string id)
+        {
+            var result = await _privateFileService.DeletePF(id);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpGet("GetActive")]
+        public async Task<IActionResult> GetActive()
+        {
+            var result = await _privateFileService.GetActive();
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpGet("DownloadPF")]
+        public async Task<IActionResult> DownloadPF(string id)
+        {
+            var (fileStream, message) = await _privateFileService.DownloadPF(id);
+            if (fileStream!=null)
+            {
+                var contentDisposition = new ContentDispositionHeaderValue("attachment")
+                {
+                    FileName = message,
+                };
+                Response.Headers.Add("Content-Disposition", contentDisposition.ToString());
+                return File(fileStream, "application/octet-stream", message);
+            }
+            return BadRequest(message);
         }
     }
 }

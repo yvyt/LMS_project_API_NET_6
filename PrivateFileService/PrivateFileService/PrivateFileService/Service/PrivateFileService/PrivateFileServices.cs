@@ -1,23 +1,26 @@
-﻿using PrivateFileService.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
+using PrivateFileService.Data;
 using PrivateFileService.Model;
 using System.Net.Http.Headers;
-using System.Text.Json;
 using System.Text;
-using System.Reflection.Metadata;
-using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace PrivateFileService.Service.PrivateFileService
 {
-    public class PrivateFileServices:IPrivateFileService
+    public class PrivateFileServices : IPrivateFileService
     {
         public PrivateFileContext _context { get; set; }
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly HttpClient _httpClient;
-        public PrivateFileServices(PrivateFileContext context, IHttpContextAccessor httpContext, HttpClient httpClient = null)
+        private readonly IFileProvider _fileProvider;
+
+        public PrivateFileServices(PrivateFileContext context, IHttpContextAccessor httpContext, IFileProvider fileProvider, HttpClient httpClient = null)
         {
             _context = context;
             _httpContextAccessor = httpContext;
             _httpClient = httpClient;
+            _fileProvider = fileProvider;
         }
 
         public async Task<ManagerRespone> AddPrivateFile(PrivateFileUploadDTO privateFile)
@@ -29,7 +32,7 @@ namespace PrivateFileService.Service.PrivateFileService
                 try
                 {
 
-                   
+
                     var path = $"Upload/{user.Id}/PrivateFile/";
                     var documentId = "";
                     if (privateFile.FileContent != null)
@@ -44,19 +47,19 @@ namespace PrivateFileService.Service.PrivateFileService
                             };
                         }
                         documentId = document.DocumentId;
-                        
+
                     }
                     var file = privateFile.FileContent;
                     long fileSizeInBytes = file.Length;
 
                     PrivateFile privateFile1 = new PrivateFile
                     {
-                        Name=file.FileName,
-                        Type= Path.GetExtension(file.FileName),
-                        Size=ConvertBytesToMB(fileSizeInBytes),
-                        createBy=user.Id,
-                        updateBy=user.Id,
-                        DocumentId=documentId,
+                        Name = file.FileName,
+                        Type = Path.GetExtension(file.FileName),
+                        Size = ConvertBytesToMB(fileSizeInBytes),
+                        createBy = user.Id,
+                        updateBy = user.Id,
+                        DocumentId = documentId,
                     };
                     await _context.PrivateFiles.AddAsync(privateFile1);
                     int numberOfChanges = await _context.SaveChangesAsync();
@@ -149,16 +152,16 @@ namespace PrivateFileService.Service.PrivateFileService
             {
                 try
                 {
-                    var files= _context.PrivateFiles.ToList();
+                    var files = _context.PrivateFiles.ToList();
                     List<PrivateFileDTO> result = new List<PrivateFileDTO>();
                     foreach (var file in files)
                     {
                         var fileDTO = new PrivateFileDTO
                         {
-                            Id=file.Id,
-                            Name= file.Name,
-                            Type= file.Type,
-                            Size=file.Size,
+                            Id = file.Id,
+                            Name = file.Name,
+                            Type = file.Type,
+                            Size = file.Size,
                         };
                         result.Add(fileDTO);
                     }
@@ -182,7 +185,7 @@ namespace PrivateFileService.Service.PrivateFileService
                 try
                 {
                     var file = await _context.PrivateFiles.FirstOrDefaultAsync(x => x.Id == id);
-                    if(file==null)
+                    if (file == null)
                     {
                         return null;
                     }
@@ -221,10 +224,10 @@ namespace PrivateFileService.Service.PrivateFileService
                             IsSuccess = false,
                         };
                     }
-                    var oldName= file.Name;
-                    
+                    var oldName = file.Name;
+
                     var document = await GetDocumentFromDocumentServiceAsync(file.DocumentId, accessToken);
-                    if(document == null)
+                    if (document == null)
                     {
 
                         return new ManagerRespone
@@ -234,8 +237,8 @@ namespace PrivateFileService.Service.PrivateFileService
                         };
                     }
                     var oldPath = document.Link;
-                    var newPath = document.Link.Replace(oldName, newName)+document.ContentType;
-                    var result = await UpdateLinkFromDocumentServiceAsync(document.DocumentId,oldPath, newPath,accessToken);
+                    var newPath = document.Link.Replace(oldName, newName) + document.ContentType;
+                    var result = await UpdateLinkFromDocumentServiceAsync(document.DocumentId, oldPath, newPath, accessToken);
                     if (!result.IsSuccess)
                     {
                         return result;
@@ -253,7 +256,7 @@ namespace PrivateFileService.Service.PrivateFileService
                         };
 
                     }
-                    file.Name = newName+Path.GetExtension(oldName);
+                    file.Name = newName + Path.GetExtension(oldName);
                     _context.PrivateFiles.Update(file);
                     int number = await _context.SaveChangesAsync();
                     if (number > 0)
@@ -287,12 +290,12 @@ namespace PrivateFileService.Service.PrivateFileService
             };
         }
 
-        private async Task<ManagerRespone> UpdateLinkFromDocumentServiceAsync(string id,string oldPath, string newPath,string accessToken)
+        private async Task<ManagerRespone> UpdateLinkFromDocumentServiceAsync(string id, string oldPath, string newPath, string accessToken)
         {
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            
-            
-            var response = await _httpClient.PutAsync($"https://localhost:44367/Document/UploadLink?id={id}&oldPath={oldPath}&newPath={newPath}", null) ;
+
+
+            var response = await _httpClient.PutAsync($"https://localhost:44367/Document/UploadLink?id={id}&oldPath={oldPath}&newPath={newPath}", null);
 
             if (response.IsSuccessStatusCode)
             {
@@ -306,8 +309,8 @@ namespace PrivateFileService.Service.PrivateFileService
             }
             return new ManagerRespone
             {
-                Message ="Error when upload link",
-                IsSuccess=false
+                Message = "Error when upload link",
+                IsSuccess = false
             };
         }
 
@@ -330,5 +333,132 @@ namespace PrivateFileService.Service.PrivateFileService
             return null;
         }
 
+        public async Task<ManagerRespone> DeletePF(string id)
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var file = await _context.PrivateFiles.FirstOrDefaultAsync(x => x.Id == id);
+                    if (file == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist private file with id={id}",
+                            IsSuccess = false,
+                        };
+                    }
+                    file.IsActive = false;
+                    file.updateBy = user.Id;
+                    file.UpdatedAt = DateTime.Now;
+                    _context.PrivateFiles.Update(file);
+                    int numberOfChanges = await _context.SaveChangesAsync();
+                    if (numberOfChanges > 0)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Successfully delete private file.",
+                            IsSuccess = true,
+                        };
+                    }
+                    return new ManagerRespone
+                    {
+                        Message = $"Error when delete private file.",
+                        IsSuccess = false,
+                    };
+                }
+                catch (Exception ex)
+                {
+                    // Handle exceptions appropriately
+                    return new ManagerRespone
+                    {
+                        Message = $"Error: {ex.Message}",
+                        IsSuccess = false,
+                    };
+                }
+            }
+            return new ManagerRespone
+            {
+                Message = $"Unthorize",
+                IsSuccess = false,
+            };
+        }
+
+        public async Task<List<PrivateFileDTO>> GetActive()
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var files = _context.PrivateFiles.Where(x => x.IsActive == true).ToList();
+                    List<PrivateFileDTO> result = new List<PrivateFileDTO>();
+                    foreach (var file in files)
+                    {
+                        var fileDTO = new PrivateFileDTO
+                        {
+                            Id = file.Id,
+                            Name = file.Name,
+                            Type = file.Type,
+                            Size = file.Size,
+                        };
+                        result.Add(fileDTO);
+                    }
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    // Handle exceptions appropriately
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        public async Task<(Stream, string)> DownloadPF(string id)
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var file = await _context.PrivateFiles.FirstOrDefaultAsync(x => x.Id == id);
+                    if (file == null)
+                    {
+                        return (null, $"Don't exist file with id={id}");
+                    }
+                    var document = await GetDocumentFromDocumentServiceAsync(file.DocumentId, accessToken);
+                    var fileName = document.FileName;
+                    if (string.IsNullOrEmpty(fileName))
+                    {
+                        // You might want to customize the error handling
+                        return (null, $"File Name is Empty");
+                    }
+
+                    // Get the filePath
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(),document.Link);
+
+                    if (!File.Exists(filePath))
+                    {
+                        // You might want to customize the error handling
+                        return (null, $"File not found: {fileName}");
+                    }
+                    return (System.IO.File.OpenRead(filePath), document.FileName);
+
+
+                }
+                catch (Exception ex)
+                {
+                    // Handle exceptions appropriately
+                    return (null, $"Error '{ex.Message}' when download.");
+                }
+            }
+            return (null, $"Unthorize");
+
+        }
     }
 }
