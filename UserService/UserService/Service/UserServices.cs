@@ -122,9 +122,8 @@ namespace UserService.Service
             var identityUser = new IdentityUser
             {
                 Email = user.Email,
-                UserName = user.Email,
+                UserName = user.Username,
                 PhoneNumber = user.Phone,
-
                 TwoFactorEnabled = true
             };
             var checkRole = await _roleManager.RoleExistsAsync(role);
@@ -249,10 +248,25 @@ namespace UserService.Service
             };
         }
 
-        public async Task<List<IdentityUser>> GetAll()
+        public async Task<List<UserDTO>> GetAll()
         {
             var allUsers = await _userManager.Users.ToListAsync();
-            return allUsers;
+            var result = new List<UserDTO>();
+            foreach(var user in allUsers)
+            {
+                var roleName = await _userManager.GetRolesAsync(user);
+                var firstRole = roleName.FirstOrDefault();
+
+                UserDTO userDTO = new UserDTO
+                {
+                    Id = user.Id,
+                    UserName = user.UserName,
+                    Email=user.Email,
+                    RoleName=firstRole
+                };
+                result.Add(userDTO);
+            }
+            return result;
         }
 
         public async Task<UserManagerRespone> ForgotPassword(string email)
@@ -350,7 +364,8 @@ namespace UserService.Service
                 {
                     Id = user.Id,
                     Email = user.Email,
-                    RoleName = firstRole
+                    RoleName = firstRole,
+                    UserName = user.UserName
                 };
             }
             return null;
@@ -385,7 +400,8 @@ namespace UserService.Service
                 {
                     Id = user.Id,
                     Email = user.Email,
-                    RoleName = firstRole
+                    RoleName = firstRole,
+                    UserName=user.UserName
                 };
             }
             return null;

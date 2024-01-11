@@ -10,7 +10,7 @@ namespace UserService.Service
         Task<IdentityUser> SendMailAsync( string email);
         Task<UserManagerRespone> ConfirmEmail(string email, string token);
         Task<UserManagerRespone> LoginWithOTP(string otp, string email);
-        Task<List<IdentityUser>> GetAll();
+        Task<List<UserDTO>> GetAll();
         Task<UserManagerRespone> ForgotPassword(string email);
         UserManagerRespone GetResetPassword(string token, string email);
         Task<UserManagerRespone> ResetPassword(ResetPassword model);

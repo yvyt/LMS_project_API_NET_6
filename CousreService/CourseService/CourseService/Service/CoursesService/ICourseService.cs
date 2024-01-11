@@ -8,9 +8,9 @@ namespace CourseService.Service.CoursesService
     {
         public Task<ManagerRespone> AddCourse(CourseDTO course);
         Task<ManagerRespone> DeleteCoure(string id);
-        public List<CourseDTO> GetAll();
-        CourseDTO GetById(string id);
+        public Task<List<CourseDetail>> GetAll();
+        Task<CourseDetail> GetById(string id);
         Task<ManagerRespone> UpdateCourse(string id, CourseDTO course);
-        Task<List<CourseDTO>> GetActiceCourse();
+        Task<List<CourseDetail>> GetActiceCourse();
     }
 }

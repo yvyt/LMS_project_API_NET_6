@@ -29,9 +29,9 @@ namespace CourseService.Controllers
         }
         [HttpGet("AllCourses")]
         [Authorize(AuthenticationSchemes = "Bearer")]
-        public  IActionResult AllCourse()
+        public async Task<IActionResult> AllCourse()
         {
-            var result = _courseService.GetAll();
+            var result = await _courseService.GetAll();
             if (result!=null)
             {
                 return Ok(result);
@@ -40,9 +40,9 @@ namespace CourseService.Controllers
         }
         [HttpGet("CourseById")]
         [Authorize(AuthenticationSchemes = "Bearer")]
-        public IActionResult GetCourse(string id)
+        public async Task<IActionResult> GetCourse(string id)
         {
-            var result = _courseService.GetById(id);
+            var result =  await _courseService.GetById(id);
             if (result != null)
             {
                 return Ok(result);

@@ -2,6 +2,9 @@
 using CourseService.Model;
 using Microsoft.EntityFrameworkCore;
 using CourseService.Model;
+using System.Net.Http.Headers;
+using System.Net.Http;
+using System.Text.Json;
 
 namespace CourseService.Service.CoursesService
 {
@@ -9,14 +12,16 @@ namespace CourseService.Service.CoursesService
     {
         private readonly CourseContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly HttpClient _httpClient;
 
         private IConfiguration _config;
 
-        public CourseServices(CourseContext courseContext, IConfiguration config, IHttpContextAccessor httpContextAccessor)
+        public CourseServices(CourseContext courseContext, IConfiguration config, IHttpContextAccessor httpContextAccessor, HttpClient httpClient)
         {
             _context = courseContext;
             _config = config;
             _httpContextAccessor = httpContextAccessor;
+            _httpClient = httpClient;
         }
 
         public async Task<ManagerRespone> AddCourse(CourseDTO course)
@@ -113,7 +118,7 @@ namespace CourseService.Service.CoursesService
             }; ;
         }
 
-        public async Task<List<CourseDTO>> GetActiceCourse()
+        public async Task<List<CourseDetail>> GetActiceCourse()
         {
             var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
@@ -123,13 +128,24 @@ namespace CourseService.Service.CoursesService
                 try
                 {
                     var courses = _context.Courses.Where(x => x.IsActive == true).ToList();
-                    List<CourseDTO> result = new List<CourseDTO>();
+                    List<CourseDetail> result = new List<CourseDetail>();
                     foreach (var course in courses)
                     {
-                        CourseDTO courseDTO = new CourseDTO
+                        var us = await GetUsersFromUserServiceAsync(course.userId, accessToken);
+                        if (us == null)
                         {
-                            Name = course.Name,
+                            return null;
+                        }
+                        CourseDetail courseDTO = new CourseDetail
+                        {
                             Id = course.Id,
+                            Name = course.Name,
+                            CreateBy = us.UserName,
+                            Status = course.Status,
+                            CreatedAt=course.CreatedAt,
+                            UpdatedAt=course.UpdatedAt,
+                            IsActive = course.IsActive
+
                         };
                         result.Add(courseDTO);
                     }
@@ -143,21 +159,32 @@ namespace CourseService.Service.CoursesService
             return null;
         }
 
-        public List<CourseDTO> GetAll()
+        public async Task<List<CourseDetail>> GetAll()
         {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
             var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO;
             if (user != null)
             {
                 try
                 {
                     var courses = _context.Courses.ToList();
-                    List<CourseDTO> result = new List<CourseDTO>();
+                    List<CourseDetail> result = new List<CourseDetail>();
                     foreach (var course in courses)
                     {
-                        CourseDTO courseDTO = new CourseDTO
+                        var us = await GetUsersFromUserServiceAsync(course.userId, accessToken);
+                        if (us == null)
                         {
-                            Name=course.Name,
-                            Id=course.Id,
+                            return null;
+                        }
+                        CourseDetail courseDTO = new CourseDetail
+                        {
+                            Id = course.Id,
+                            Name = course.Name,
+                            CreateBy = us.UserName,
+                            Status = course.Status,
+                            CreatedAt = course.CreatedAt,
+                            UpdatedAt = course.UpdatedAt,
+                            IsActive=course.IsActive
                         };
                         result.Add(courseDTO);
                     }
@@ -175,8 +202,9 @@ namespace CourseService.Service.CoursesService
 
 
 
-        public CourseDTO GetById(string id)
+        public async Task<CourseDetail> GetById(string id)
         {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
             var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO;
             if (user != null)
             {
@@ -185,11 +213,23 @@ namespace CourseService.Service.CoursesService
                     var c = _context.Courses.FirstOrDefault(co => co.Id == id);
                     if (c != null)
                     {
-                        CourseDTO courseDTO = new CourseDTO
+                        var us = await GetUsersFromUserServiceAsync(c.userId, accessToken);
+                        if (us == null)
                         {
-                            Name= c.Name,
-                            Id=c.Id,
+                            return null;
+                        }
+                        CourseDetail courseDTO = new CourseDetail
+                        {
+                            Id = c.Id,
+                            Name = c.Name,
+                            CreateBy = us.UserName,
+                            Status = c.Status,
+                            CreatedAt = c.CreatedAt,
+                            UpdatedAt = c.UpdatedAt,
+                            IsActive = c.IsActive
+
                         };
+                        
                         return courseDTO;
                     }
                     return null;
@@ -254,7 +294,24 @@ namespace CourseService.Service.CoursesService
             };
 
         }
+        public async Task<UserDTO> GetUsersFromUserServiceAsync(string id, string accessToken)
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            var response = await _httpClient.GetAsync($"https://localhost:44357/User/UserById?id={id}");
 
+            if (response.IsSuccessStatusCode)
+            {
+                // Deserialize the response content to your User class
+                var jsonContent = await response.Content.ReadAsStringAsync();
+                var user = JsonSerializer.Deserialize<UserDTO>(jsonContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                return user;
+            }
+            return null;
+        }
 
 
     }

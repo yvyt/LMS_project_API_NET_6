@@ -139,7 +139,7 @@ namespace CourseService.Service.ClassesService
                         {
                             Id = clazz.Id,
                             Course = courseName.Name,
-                            Teacher = TeacherName.Email,
+                            Teacher = TeacherName.UserName,
                             Name = clazz.Name,
                             Description = clazz.Description,
                         };
@@ -185,7 +185,7 @@ namespace CourseService.Service.ClassesService
                     {
                         Name = classes.Name,
                         Course = courses.Name,
-                        Teacher = teacher.Email,
+                        Teacher = teacher.UserName,
                         Description = classes.Description,
                         Id = classes.Id,
                     };
@@ -369,7 +369,7 @@ namespace CourseService.Service.ClassesService
                         {
                             Id = clazz.Id,
                             Course = courseName.Name,
-                            Teacher = TeacherName.Email,
+                            Teacher = TeacherName.UserName,
                             Name = clazz.Name,
                             Description = clazz.Description,
                         };

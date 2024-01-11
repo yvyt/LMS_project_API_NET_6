@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NETCore.MailKit.Core;
@@ -89,7 +90,10 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(op =>
     op.Password.RequireDigit = false;
     op.Password.RequireLowercase = false;
     op.Password.RequiredLength = 8;
-   
+    op.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+    op.User.AllowedUserNameCharacters = string.Empty;
+
+
 }).AddEntityFrameworkStores<AppicationDbContext>()
 .AddDefaultTokenProviders();
 var app = builder.Build();
