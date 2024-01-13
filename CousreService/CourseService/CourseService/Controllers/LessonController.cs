@@ -63,7 +63,7 @@ namespace CourseService.Controllers
             }
             return BadRequest(result);
         }
-        [HttpPut("EditTopic")]
+        [HttpPut("EditLesson")]
         [Authorize(AuthenticationSchemes = "Bearer")]
         [Authorize(Policy = "EditLesson")]
         public async Task<IActionResult> EditLesson(string id, [FromForm] LessonDTO lessonDTO)

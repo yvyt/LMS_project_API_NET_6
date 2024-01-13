@@ -255,15 +255,7 @@ namespace CourseService.Service.LessonService
                             IsSuccess = false
                         };
                     }
-                    var d = await _context.Documents.FirstOrDefaultAsync(d => d.DocumentId == less.DocumentId);
-                    if (d == null)
-                    {
-                        return new ManagerRespone
-                        {
-                            Message = $"Don't find document with path={d.link}",
-                            IsSuccess = false
-                        };
-                    }
+                   
 
                     var classes = await _context.Classes.FirstOrDefaultAsync(c => c.Id == topic.ClassId);
                     if (user.Id != classes.Teacher)
@@ -274,18 +266,30 @@ namespace CourseService.Service.LessonService
                             IsSuccess = false,
                         };
                     }
-                    string path = $"Upload/{classes.Name}/{topic.Name}/Lesson";
-                    var document = await _documenService.UploadFile(lessonDTO.FileContent, path);
-                    if (document == null)
+                    var d = await _context.Documents.FirstOrDefaultAsync(d => d.DocumentId == less.DocumentId);
+                    var link = "";
+                    var documentId = "";
+                    if (d != null)
                     {
-                        return new ManagerRespone
+                        link = d.link;
+                        documentId = d.DocumentId;
+                    }
+                    string path = $"Upload/{classes.Name}/{topic.Name}/Lesson";
+                    if (d != null && lessonDTO.FileContent != null)
+                    {
+                        var document = await _documenService.UploadFile(lessonDTO.FileContent, path);
+                        if (document == null)
                         {
-                            Message = $"Error when upload new file",
-                            IsSuccess = false,
-                        };
+                            return new ManagerRespone
+                            {
+                                Message = $"Failed to upload new lesson",
+                                IsSuccess = false,
+                            };
+                        }
+                        documentId = document.DocumentId;
                     }
                     less.Title = lessonDTO.Title;
-                    less.DocumentId = document.DocumentId;
+                    less.DocumentId = documentId;
                     less.TopicId = topic.Id;
                     less.TypeId = type.Id;
                     less.updateBy = user.Id;
@@ -300,11 +304,15 @@ namespace CourseService.Service.LessonService
                             IsSuccess = false,
                         };
                     }
-                    var dele = await _documenService.Delete(d);
-                    if (dele.IsSuccess == false)
+                    if (lessonDTO.FileContent != null && d != null)
                     {
-                        return dele;
+                        var dele = await _documenService.Delete(d);
+                        if (dele.IsSuccess == false)
+                        {
+                            return dele;
+                        }
                     }
+                   
                     return new ManagerRespone
                     {
                         Message = $"Successfully saved {number} changes to the database.",
