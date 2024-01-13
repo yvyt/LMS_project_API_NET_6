@@ -369,7 +369,7 @@ namespace CourseService.Service.LessonService
                     {
                         return new ManagerRespone
                         {
-                            Message = $"Don't exist classes with id={topic.ClassId}",
+                            Message = $"Don't exist classes with id={topic.ClassId} or you don't have permission to delete this lesson",
                             IsSuccess = false
                         };
                     }

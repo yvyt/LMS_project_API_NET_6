@@ -2,14 +2,12 @@
 using CourseService.Model;
 using CourseService.Service.DocumentService;
 using Microsoft.EntityFrameworkCore;
-using System.Resources;
-using CourseService.Model;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace CourseService.Service.ResourceService
 {
-    public class ResourceService:IResourceService
+    public class ResourceService : IResourceService
     {
         private CourseContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -148,10 +146,10 @@ namespace CourseService.Service.ResourceService
                         }
                         ResourceDTO res = new ResourceDTO
                         {
-                            Id=re.Id,
-                            Lesson=lesson.Title,
-                            Type=typ.Name,
-                            Name=re.Name,
+                            Id = re.Id,
+                            Lesson = lesson.Title,
+                            Type = typ.Name,
+                            Name = re.Name,
                         };
                         r.Add(res);
                     }
@@ -175,30 +173,43 @@ namespace CourseService.Service.ResourceService
             {
                 try
                 {
-                    var resources = await _context.Resources.FirstOrDefaultAsync(r=>r.Id==id);
+                    var resources = await _context.Resources.FirstOrDefaultAsync(r => r.Id == id);
                     if (resources == null)
                     {
                         return null;
                     }
-                    
-                        var lesson = await _context.Lessons.FirstOrDefaultAsync(cl => cl.Id == resources.LessonId);
-                        if (lesson == null)
-                        {
-                            return null;
-                        }
-                        var typ = await _context.TypeFiles.FirstOrDefaultAsync(t => t.Id == resources.TypeId);
-                        if (typ == null)
-                        {
-                            return null;
-                        }
+
+                    var lesson = await _context.Lessons.FirstOrDefaultAsync(cl => cl.Id == resources.LessonId);
+                    if (lesson == null)
+                    {
+                        return null;
+                    }
+                    var topic = await _context.Topics.FirstOrDefaultAsync(t => t.Id == lesson.TopicId);
+                    if (topic == null)
+                    {
+                        return null;
+                    }
+                    var classes = await _context.Classes.FirstOrDefaultAsync(cl => cl.Id == topic.ClassId);
+                    if (classes == null)
+                    {
+                        return null;
+                    }
+                    var typ = await _context.TypeFiles.FirstOrDefaultAsync(t => t.Id == resources.TypeId);
+                    if (typ == null)
+                    {
+                        return null;
+                    }
+                    if (classes.Teacher == user.Id)
+                    {
                         ResourceDTO res = new ResourceDTO
                         {
                             Id = resources.Id,
                             Lesson = lesson.Title,
                             Type = typ.Name,
                             Name = resources.Name,
-                        };                    
-                    return res;
+                        };
+                        return res;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -218,16 +229,27 @@ namespace CourseService.Service.ResourceService
             {
                 try
                 {
-                    
-                    var lessons= await _context.Lessons.FirstOrDefaultAsync(ls=>ls.Id==id);
-                    if(lessons == null)
+
+                    var lessons = await _context.Lessons.FirstOrDefaultAsync(ls => ls.Id == id);
+                    if (lessons == null)
+                    {
+                        return null;
+                    }
+                    var topic = await _context.Topics.FirstOrDefaultAsync(t => t.Id == lessons.TopicId);
+                    if (topic == null)
+                    {
+                        return null;
+                    }
+                    var classes = await _context.Classes.FirstOrDefaultAsync(cl => cl.Id == topic.ClassId);
+                    if (classes == null)
                     {
                         return null;
                     }
                     var res = _context.Resources.Where(r => r.LessonId == lessons.Id).ToList();
                     List<ResourceDetails> rs = new List<ResourceDetails>();
 
-                    foreach (var r in res){
+                    foreach (var r in res)
+                    {
                         var typ = await _context.TypeFiles.FirstOrDefaultAsync(t => t.Id == r.TypeId);
                         if (typ == null)
                         {
@@ -243,20 +265,23 @@ namespace CourseService.Service.ResourceService
                         {
                             return null;
                         }
-                        var updateBy= await GetUsersFromUserServiceAsync(r.updateBy, accessToken);
-                        ResourceDetails resource = new ResourceDetails
+                        var updateBy = await GetUsersFromUserServiceAsync(r.updateBy, accessToken);
+                        if (classes.Teacher == user.Id)
                         {
-                            Id = r.Id,
-                            Lesson = lessons.Title,
-                            Type = typ.Name,
-                            Name = r.Name,
-                            Status=sta,
-                            CreateAt=r.CreatedAt.ToString(),
-                            CreateBy=owner.UserName,
-                            UpdateAt=r.UpdatedAt.ToString(),
-                            UpdateBy=updateBy.UserName,
-                        };
-                        rs.Add(resource);
+                            ResourceDetails resource = new ResourceDetails
+                            {
+                                Id = r.Id,
+                                Lesson = lessons.Title,
+                                Type = typ.Name,
+                                Name = r.Name,
+                                Status = sta,
+                                CreateAt = r.CreatedAt.ToString(),
+                                CreateBy = owner.UserName,
+                                UpdateAt = r.UpdatedAt.ToString(),
+                                UpdateBy = updateBy.UserName,
+                            };
+                            rs.Add(resource);
+                        }
                     }
                     return rs;
                 }
@@ -277,7 +302,7 @@ namespace CourseService.Service.ResourceService
             {
                 try
                 {
-                    var res = await _context.Resources.FirstOrDefaultAsync(r=>r.Id == resourceDTO.Id);
+                    var res = await _context.Resources.FirstOrDefaultAsync(r => r.Id == resourceDTO.Id);
                     if (res == null)
                     {
                         return new ManagerRespone
@@ -304,15 +329,7 @@ namespace CourseService.Service.ResourceService
                             IsSuccess = false
                         };
                     }
-                    var d = await _context.Documents.FirstOrDefaultAsync(d => d.DocumentId == res.DocumentId);
-                    if (d == null)
-                    {
-                        return new ManagerRespone
-                        {
-                            Message = $"Don't find document with path={d.link}",
-                            IsSuccess = false
-                        };
-                    }
+
                     var topic = await _context.Topics.FirstOrDefaultAsync(t => t.Id == lesson.TopicId);
                     var classes = await _context.Classes.FirstOrDefaultAsync(c => c.Id == topic.ClassId);
                     if (user.Id != classes.Teacher)
@@ -323,11 +340,19 @@ namespace CourseService.Service.ResourceService
                             IsSuccess = false,
                         };
                     }
+                    var d = await _context.Documents.FirstOrDefaultAsync(d => d.DocumentId == res.DocumentId);
+                    var link = "";
+                    var documentId = "";
+                    if (d != null)
+                    {
+                        link = d.link;
+                        documentId = d.DocumentId;
+                    }
                     string path = $"Upload/{classes.Name}/{topic.Name}/Resources";
                     var document = await _context.Documents.FirstOrDefaultAsync(d => d.DocumentId == res.DocumentId);
-                    if(resourceDTO.FileContent!=null)
+                    if (resourceDTO.FileContent != null && d != null)
                     {
-                         document = await _documenService.UploadFile(resourceDTO.FileContent, path);
+                        document = await _documenService.UploadFile(resourceDTO.FileContent, path);
                         if (document == null)
                         {
                             return new ManagerRespone
@@ -336,8 +361,8 @@ namespace CourseService.Service.ResourceService
                                 IsSuccess = false,
                             };
                         }
-                        
-                        
+                        documentId = document.DocumentId;
+
                     }
 
                     res.Name = resourceDTO.Name != null ? resourceDTO.Name : document.FileName;
@@ -356,7 +381,7 @@ namespace CourseService.Service.ResourceService
                             IsSuccess = false,
                         };
                     }
-                    if (resourceDTO.FileContent != null)
+                    if (resourceDTO.FileContent != null && d != null)
                     {
                         var dele = await _documenService.Delete(d);
                         if (dele.IsSuccess == false)
@@ -370,7 +395,7 @@ namespace CourseService.Service.ResourceService
                         IsSuccess = true,
                     };
                 }
-                
+
                 catch (Exception ex)
                 {
                     return new ManagerRespone
@@ -396,7 +421,7 @@ namespace CourseService.Service.ResourceService
             {
                 try
                 {
-                    var res = await _context.Resources.FirstOrDefaultAsync(rs=>rs.Id==id);
+                    var res = await _context.Resources.FirstOrDefaultAsync(rs => rs.Id == id);
                     if (res == null)
                     {
                         return new ManagerRespone
@@ -405,8 +430,41 @@ namespace CourseService.Service.ResourceService
                             IsSuccess = false
                         };
                     }
-
-
+                    var lessons = await _context.Lessons.FirstOrDefaultAsync(ls => ls.Id == res.LessonId);
+                    if (lessons == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist lesson with id={res.LessonId}",
+                            IsSuccess = false
+                        };
+                    }
+                    var topic = await _context.Topics.FirstOrDefaultAsync(t => t.Id == lessons.TopicId);
+                    if (topic == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist topic with id={lessons.TopicId}",
+                            IsSuccess = false
+                        };
+                    }
+                    var classes = await _context.Classes.FirstOrDefaultAsync(cl => cl.Id == topic.ClassId);
+                    if (classes == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist classes with id={topic.ClassId}",
+                            IsSuccess = false
+                        };
+                    }
+                    if (classes.Teacher != user.Id)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You don't have permission to delete this resource",
+                            IsSuccess = false
+                        };
+                    }
                     res.IsActive = false;
                     res.UpdatedAt = DateTime.Now;
                     _context.Resources.Update(res);
@@ -450,7 +508,7 @@ namespace CourseService.Service.ResourceService
             {
                 try
                 {
-                    var resources = _context.Resources.Where(r=>r.IsActive==true).ToList();
+                    var resources = _context.Resources.Where(r => r.IsActive == true).ToList();
                     if (resources == null)
                     {
                         return null;
@@ -463,19 +521,32 @@ namespace CourseService.Service.ResourceService
                         {
                             return null;
                         }
+                        var topic = await _context.Topics.FirstOrDefaultAsync(t => t.Id == lesson.TopicId);
+                        if (topic == null)
+                        {
+                            return null;
+                        }
+                        var classes = await _context.Classes.FirstOrDefaultAsync(cl => cl.Id == topic.ClassId);
+                        if (classes == null)
+                        {
+                            return null;
+                        }
                         var typ = await _context.TypeFiles.FirstOrDefaultAsync(t => t.Id == re.TypeId);
                         if (typ == null)
                         {
                             return null;
                         }
-                        ResourceDTO res = new ResourceDTO
+                        if (classes.Teacher == user.Id)
                         {
-                            Id = re.Id,
-                            Lesson = lesson.Title,
-                            Type = typ.Name,
-                            Name = re.Name,
-                        };
-                        r.Add(res);
+                            ResourceDTO res = new ResourceDTO
+                            {
+                                Id = re.Id,
+                                Lesson = lesson.Title,
+                                Type = typ.Name,
+                                Name = re.Name,
+                            };
+                            r.Add(res);
+                        }
                     }
                     return r;
                 }
@@ -500,7 +571,7 @@ namespace CourseService.Service.ResourceService
                     {
                         return (null, $"Don't exist resource with id={id}");
                     }
-                    var document = await _context.Documents.FirstOrDefaultAsync(x=>x.DocumentId==file.DocumentId);
+                    var document = await _context.Documents.FirstOrDefaultAsync(x => x.DocumentId == file.DocumentId);
                     var fileName = document.FileName;
                     if (string.IsNullOrEmpty(fileName))
                     {
