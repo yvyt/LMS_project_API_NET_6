@@ -75,7 +75,93 @@ namespace UserService.Service
                 foreach (var role in userRole)
                 {
                     authClaim.Add(new Claim(ClaimTypes.Role, role));
+                    if (role == "Leadership")
+                    {
+                        authClaim.Add(new Claim("Permission", "Create:Course"));
+                        authClaim.Add(new Claim("Permission", "Edit:Course"));
+                        authClaim.Add(new Claim("Permission", "Delete:Course"));
+                        authClaim.Add(new Claim("Permission", "View:Course"));
+
+                        authClaim.Add(new Claim("Permission", "Create:Class"));
+                        authClaim.Add(new Claim("Permission", "Edit:Class"));
+                        authClaim.Add(new Claim("Permission", "Delete:Class"));
+                        authClaim.Add(new Claim("Permission", "View:Class"));
+
+                        authClaim.Add(new Claim("Permission", "View:Topic"));
+                        authClaim.Add(new Claim("Permission", "View:Lesson"));
+                        authClaim.Add(new Claim("Permission", "View:ExamQuestion"));
+                        authClaim.Add(new Claim("Permission", "View:Question"));
+                        authClaim.Add(new Claim("Permission", "View:Answer"));
+
+                        authClaim.Add(new Claim("Permission", "Create:Resource"));
+                        authClaim.Add(new Claim("Permission", "Edit:Resource"));
+                        authClaim.Add(new Claim("Permission", "Delete:Resource"));
+                        authClaim.Add(new Claim("Permission", "View:Resource"));
+
+                        authClaim.Add(new Claim("Permission", "Create:Private File"));
+                        authClaim.Add(new Claim("Permission", "Edit:Private File"));
+                        authClaim.Add(new Claim("Permission", "Delete:Private File"));
+                        authClaim.Add(new Claim("Permission", "View:Private File"));
+
+                        authClaim.Add(new Claim("Permission", "Create:User"));
+                        authClaim.Add(new Claim("Permission", "Edit:User"));
+                        authClaim.Add(new Claim("Permission", "Delete:User"));
+                        authClaim.Add(new Claim("Permission", "View:User"));
+                    }
+                    if (role == "Teacher")
+                    {
+                        authClaim.Add(new Claim("Permission", "View:Class"));
+                        authClaim.Add(new Claim("Permission", "View:Course"));
+
+                        authClaim.Add(new Claim("Permission", "Create:Topic"));
+                        authClaim.Add(new Claim("Permission", "Edit:Topic"));
+                        authClaim.Add(new Claim("Permission", "Delete:Topic"));
+                        authClaim.Add(new Claim("Permission", "View:Topic"));
+
+                        authClaim.Add(new Claim("Permission", "Create:Lesson"));
+                        authClaim.Add(new Claim("Permission", "Edit:Lesson"));
+                        authClaim.Add(new Claim("Permission", "Delete:Lesson"));
+                        authClaim.Add(new Claim("Permission", "View:Lesson"));
+
+                        authClaim.Add(new Claim("Permission", "Create:Resource"));
+                        authClaim.Add(new Claim("Permission", "Edit:Resource"));
+                        authClaim.Add(new Claim("Permission", "Delete:Resource"));
+                        authClaim.Add(new Claim("Permission", "View:Resource"));
+
+                        authClaim.Add(new Claim("Permission", "Create:Exam"));
+                        authClaim.Add(new Claim("Permission", "Edit:Exam"));
+                        authClaim.Add(new Claim("Permission", "Delete:Exam"));
+                        authClaim.Add(new Claim("Permission", "View:Exam"));
+
+                        authClaim.Add(new Claim("Permission", "Create:ExamQuestion"));
+                        authClaim.Add(new Claim("Permission", "Edit:ExamQuestion"));
+                        authClaim.Add(new Claim("Permission", "Delete:ExamQuestion"));
+                        authClaim.Add(new Claim("Permission", "View:ExamQuestion"));
+
+                        authClaim.Add(new Claim("Permission", "Create:Question"));
+                        authClaim.Add(new Claim("Permission", "Edit:Question"));
+                        authClaim.Add(new Claim("Permission", "Delete:Question"));
+                        authClaim.Add(new Claim("Permission", "View:Question"));
+
+                        authClaim.Add(new Claim("Permission", "Create:Answer"));
+                        authClaim.Add(new Claim("Permission", "Edit:Answer"));
+                        authClaim.Add(new Claim("Permission", "Delete:Answer"));
+                        authClaim.Add(new Claim("Permission", "View:Answer"));
+
+                        authClaim.Add(new Claim("Permission", "View:User"));
+
+                    }
+                    if (role == "Student")
+                    {
+                        authClaim.Add(new Claim("Permission", "View:Course"));
+                        authClaim.Add(new Claim("Permission", "View:Class"));
+                        authClaim.Add(new Claim("Permission", "View:User"));
+                        authClaim.Add(new Claim("Permission", "View:Exam"));
+                        authClaim.Add(new Claim("Permission", "View:Topic"));
+                        authClaim.Add(new Claim("Permission", "View:Lesson"));
+                    }
                 }
+                
                 var token = CreateToken(authClaim);
                 return new UserManagerRespone
                 {

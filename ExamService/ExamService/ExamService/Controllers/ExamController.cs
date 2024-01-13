@@ -1,5 +1,6 @@
 ﻿using ExamService.Model;
 using ExamService.Service.ExamService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,6 +16,8 @@ namespace ExamService.Controllers
             _examService = examService;
         }
         [HttpPost("AddExam")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "CreateExam")]
         public async Task<IActionResult> AddExam([FromForm] ExamDTO examDTO)
         {
             var result = await _examService.AddExam(examDTO);
@@ -25,6 +28,7 @@ namespace ExamService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetAll")]
+        [Authorize(AuthenticationSchemes = "Bearer",Roles ="Leadership")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _examService.GetAll();
@@ -35,6 +39,8 @@ namespace ExamService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetById")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewExam")]
         public async Task<IActionResult> GetById(string id)
         {
             var result = await _examService.GetById(id);
@@ -45,6 +51,8 @@ namespace ExamService.Controllers
             return BadRequest(result);
         }
         [HttpPut("EditExams")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "EditExam")]
         public async Task<IActionResult> EditExam([FromForm] ExamDTO examDTO)
         {
             var result = await _examService.EditExam(examDTO);
@@ -55,6 +63,8 @@ namespace ExamService.Controllers
             return BadRequest(result);
         }
         [HttpDelete("DeleteExams")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "DeleteExam")]
         public async Task<IActionResult> DeleteExam(string id)
         {
             var result = await _examService.DeleteExam(id);
@@ -65,6 +75,8 @@ namespace ExamService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetActive")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewExam")]
         public async Task<IActionResult> GetActive()
         {
             var result = await _examService.GetActive();

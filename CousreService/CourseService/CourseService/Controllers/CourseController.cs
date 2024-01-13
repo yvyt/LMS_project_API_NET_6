@@ -17,7 +17,8 @@ namespace CourseService.Controllers
             _courseService = courseService;
         }
         [HttpPost("AddCourse")]
-        [Authorize(AuthenticationSchemes = "Bearer",Roles ="Leadership")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "CreateCourse")]
         public async Task<IActionResult> AddCourse(CourseDTO c)
         {
             var result = await _courseService.AddCourse(c);
@@ -28,7 +29,7 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpGet("AllCourses")]
-        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Leadership")]
         public async Task<IActionResult> AllCourse()
         {
             var result = await _courseService.GetAll();
@@ -40,6 +41,7 @@ namespace CourseService.Controllers
         }
         [HttpGet("CourseById")]
         [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewCourse")]
         public async Task<IActionResult> GetCourse(string id)
         {
             var result =  await _courseService.GetById(id);
@@ -51,6 +53,7 @@ namespace CourseService.Controllers
         }
         [HttpPut("EditCourse")]
         [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "EditCourse")]
         public async Task<IActionResult> Update(string id,Model.CourseDTO course)
         {
             var result = await _courseService.UpdateCourse(id,course);
@@ -62,6 +65,7 @@ namespace CourseService.Controllers
         }
         [HttpDelete("DeleteCourse")]
         [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "DeleteCourse")]
         public async Task<IActionResult> Delete(string id)
         {
             var result = await _courseService.DeleteCoure(id);
@@ -73,6 +77,7 @@ namespace CourseService.Controllers
         }
         [HttpGet("GetActiveCourse")]
         [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewCourse")]
         public async Task<IActionResult> GetActiveCourse()
         {
             var result = await _courseService.GetActiceCourse();

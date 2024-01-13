@@ -1,6 +1,7 @@
 ﻿using ExamService.Data;
 using ExamService.Model;
 using ExamService.Service.ExamQuestionService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,6 +17,8 @@ namespace ExamService.Controllers
             _service = service;
         }
         [HttpPost("AddExamQuestion")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "CreateExamQuestion")]
         public async Task<IActionResult> AddExamQuestion([FromForm] ExamQuestionDTO examQuestionDTO)
         {
             var result = await _service.AddExamQuestion(examQuestionDTO);
@@ -26,6 +29,8 @@ namespace ExamService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetById")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewExamQuestion")]
         public async Task<IActionResult> GetById(string id)
         {
             var result = await _service.GetById(id);
@@ -36,6 +41,8 @@ namespace ExamService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetByExam")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewExamQuestion")]
         public async Task<IActionResult> GetByExam(string examId)
         {
             var result = await _service.GetByExam(examId);
@@ -46,6 +53,8 @@ namespace ExamService.Controllers
             return BadRequest(result);
         }
         [HttpPut("EditExamQuestion")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "EditExamQuestion")]
         public async Task<IActionResult> EditExamQuestion([FromForm] ExamQuestionUpdateDTO examQuestionDTO)
         {
             var result = await _service.EditExamQuestion(examQuestionDTO);
@@ -56,6 +65,8 @@ namespace ExamService.Controllers
             return BadRequest(result);
         }
         [HttpDelete("DeleteExamQuestion")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "DeleteExamQuestion")]
         public async Task<IActionResult> DeleteExamQuestion(string id)
         {
             var result = await _service.DeleteExamQuestion(id);
@@ -66,6 +77,8 @@ namespace ExamService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetActive")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewExamQuestion")]
         public async Task<IActionResult> GetActive()
         {
             var result = await _service.GetActive();
@@ -76,6 +89,8 @@ namespace ExamService.Controllers
             return BadRequest(result);
         }
         [HttpPost("AddMoreQuestion")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "EditExamQuestion")]
         public async Task<IActionResult> AddMoreQuestion([FromForm] QuestionExamAdd examQuestionDTO)
         {
             var result = await _service.AddMoreQuestion(examQuestionDTO);

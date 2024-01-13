@@ -69,6 +69,19 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 {
     options.TokenLifespan = TimeSpan.FromHours(1);
 });
+builder.Services.AddAuthorization(options =>
+{
+    List<string> modules = new List<string> { "Course", "Class", "PrivateFile", "Topic", "Lesson", "Resource", "Exam", "Question", "Answer", "ExamQuestion", "User" };
+    List<string> action = new List<string> { "Edit", "Delete", "Create", "View" };
+    foreach (var module in modules)
+    {
+        foreach (var ac in action)
+        {
+            options.AddPolicy($"{ac}{module}", policy => policy.RequireClaim("Permission", $"{ac}:{module}"));
+
+        }
+    }
+});
 builder.Services.AddScoped<IUserServiceClient, UserServiceClient>();
 builder.Services.AddScoped<IPrivateFileService,PrivateFileServices>();
 builder.Services.AddHttpClient<IUserServiceClient, UserServiceClient>();

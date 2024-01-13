@@ -17,7 +17,8 @@ namespace CourseService.Controllers
             _topicService = topicService;
         }
         [HttpPost("AddTopic")]
-        [Authorize(AuthenticationSchemes = "Bearer",Roles ="Teacher")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "CreateTopic")]
 
         public async Task<IActionResult> AddTopic(TopicDTO topicDTO)
         {
@@ -29,7 +30,7 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpGet("ManagerTopic")]
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Leadership,Teacher")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Leadership")]
         public async Task<IActionResult> ManagerTopic()
         {
             var result = await _topicService.GetAll();
@@ -40,7 +41,8 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpGet("TopicById")]
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Leadership,Teacher")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewTopic")]
         public async Task<IActionResult> GetById(string id)
         {
             var result = await _topicService.GetById(id);
@@ -51,7 +53,8 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpGet("TopicByClass")]
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Leadership,Teacher")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewTopic")]
         public async Task<IActionResult> GetByClass(string classId)
         {
             var result = await _topicService.GetByClass(classId);
@@ -62,7 +65,8 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpPut("EditTopic")]
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Leadership,Teacher")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "EditTopic")]
 
         public async Task<IActionResult> EditTopic (string id,TopicDTO topic)
         {
@@ -74,7 +78,8 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpDelete("DeleteTopic")]
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Leadership,Teacher")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "DeleteTopic")]
         public async Task<IActionResult> DeleteTopic(string id)
         {
             var result = await _topicService.DeleteTopic(id);
@@ -85,7 +90,8 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetActiveTopic")]
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Leadership,Teacher")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewTopic")]
         public async Task<IActionResult> GetActiceTopic()
         {
             var result = await _topicService.GetActiveTopic();

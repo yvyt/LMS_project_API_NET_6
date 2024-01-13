@@ -48,6 +48,19 @@ builder.Services.AddSwaggerGen(option =>
         }
     });
 });
+builder.Services.AddAuthorization(options =>
+{
+    List<string> modules = new List<string> { "Course", "Class", "PrivateFile", "Topic", "Lesson", "Resource", "Exam", "Question", "Answer", "ExamQuestion", "User" };
+    List<string> action = new List<string> { "Edit", "Delete", "Create", "View" };
+    foreach (var module in modules)
+    {
+        foreach (var ac in action)
+        {
+            options.AddPolicy($"{ac}{module}", policy => policy.RequireClaim("Permission", $"{ac}:{module}"));
+
+        }
+    }
+});
 builder.Services.AddDbContext<CourseContext>(option =>
 {
     option.UseSqlServer(builder.Configuration.GetConnectionString("LMS_DB"));

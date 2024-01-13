@@ -96,6 +96,21 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(op =>
 
 }).AddEntityFrameworkStores<AppicationDbContext>()
 .AddDefaultTokenProviders();
+
+builder.Services.AddAuthorization(options =>
+{
+    List<string> modules = new List<string> { "Course", "Class", "PrivateFile", "Topic", "Lesson", "Resource", "Exam", "Question", "Answer", "ExamQuestion", "User" };
+    List<string> action = new List<string> { "Edit", "Delete", "Create", "View" };
+    foreach (var module in modules)
+    {
+        foreach (var ac in action)
+        {
+            options.AddPolicy($"{ac}{module}", policy => policy.RequireClaim("Permission", $"{ac}:{module}"));
+
+        }
+    }
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

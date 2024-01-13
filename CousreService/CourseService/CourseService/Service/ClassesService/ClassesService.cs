@@ -111,7 +111,7 @@ namespace CourseService.Service.ClassesService
             return null;
         }
 
-        public async Task<List<ClassDTO>> GetAll()
+        public async Task<List<ClassesDetails>> GetAll()
         {
             var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
@@ -121,7 +121,7 @@ namespace CourseService.Service.ClassesService
                 try
                 {
                     var classes = _context.Classes.ToList();
-                    List<ClassDTO> result = new List<ClassDTO>();
+                    List<ClassesDetails> result = new List<ClassesDetails>();
 
                     foreach (var clazz in classes)
                     {
@@ -135,13 +135,17 @@ namespace CourseService.Service.ClassesService
                         {
                             return null;
                         }
-                        ClassDTO classDTO = new ClassDTO
+                        var (lesson, numberLesson) = await CountLesson(clazz.Id);
+                        var (numberResource, numberResourceNotApp) = await CountResource(lesson, clazz.Id);
+                        ClassesDetails classDTO = new ClassesDetails
                         {
                             Id = clazz.Id,
+                            Name = clazz.Name,
                             Course = courseName.Name,
                             Teacher = TeacherName.UserName,
-                            Name = clazz.Name,
                             Description = clazz.Description,
+                            NumberOfLesson = numberLesson.ToString(),
+                            NumberOfResource = $"{numberResourceNotApp}/{numberResource}",
                         };
                         result.Add(classDTO);
                     }
@@ -342,7 +346,7 @@ namespace CourseService.Service.ClassesService
             };
         }
 
-        public async Task<List<ClassDTO>> GetActiveClasses()
+        public async Task<List<ClassesDetails>> GetActiveClasses()
         {
             var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
@@ -352,7 +356,7 @@ namespace CourseService.Service.ClassesService
                 try
                 {
                     var classes = _context.Classes.Where(x => x.IsActive == true).ToList();
-                    List<ClassDTO> result = new List<ClassDTO>();
+                    List<ClassesDetails> result = new List<ClassesDetails>();
                     foreach (var clazz in classes)
                     {
                         var courseName = _context.Courses.FirstOrDefault(c => c.Id == clazz.CourseId);
@@ -365,14 +369,19 @@ namespace CourseService.Service.ClassesService
                         {
                             return null;
                         }
-                        ClassDTO classDTO = new ClassDTO
+                        var (lesson, numberLesson) = await CountLesson(clazz.Id);
+                        var (numberResource, numberResourceNotApp) = await CountResource(lesson, clazz.Id);
+                        ClassesDetails classDTO = new ClassesDetails
                         {
                             Id = clazz.Id,
+                            Name = clazz.Name,
                             Course = courseName.Name,
                             Teacher = TeacherName.UserName,
-                            Name = clazz.Name,
                             Description = clazz.Description,
+                            NumberOfLesson = numberLesson.ToString(),
+                            NumberOfResource = $"{numberResourceNotApp}/{numberResource}",
                         };
+                       
                         result.Add(classDTO);
                     }
                     return result;
@@ -384,6 +393,81 @@ namespace CourseService.Service.ClassesService
                 }
             }
             return null;
+        }
+
+        public async Task<ClassesDetails> GetDetailClass(string id)
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var classes = await _context.Classes.FirstOrDefaultAsync(c => c.Id == id);
+                    if (classes == null)
+                    {
+                        return null;
+                    }
+
+                    var courses = _context.Courses.FirstOrDefault(c => c.Id == classes.CourseId);
+                    if (courses == null)
+                    {
+                        return null;
+                    }
+                    var teacher = await GetUsersFromUserServiceAsync(classes.Teacher, accessToken);
+                    if (teacher == null)
+                    {
+                        return null;
+                    }
+
+                    var (lesson, numberLesson) = await CountLesson(id);
+                    var (numberResource, numberResourceNotApp) = await CountResource(lesson, id);
+                    ClassesDetails classDTO = new ClassesDetails
+                    {
+                        Id = classes.Id,
+                        Name = classes.Name,
+                        Course = courses.Name,
+                        Teacher = teacher.UserName,
+                        Description = classes.Description,
+                        NumberOfLesson=numberLesson.ToString(),
+                        NumberOfResource=$"{numberResourceNotApp}/{numberResource}",
+                    };
+                    return classDTO;
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+            }
+            return null;
+        }
+        private async Task<(List<Lesson>,int)> CountLesson(string id)
+        {
+            var topics = await _context.Topics.Where(x => x.ClassId == id).ToListAsync();
+            int numberLesson = 0;
+            List<Lesson> lesson = new List<Lesson>();
+            foreach (var top in topics)
+            {
+                var le = await _context.Lessons.Where(x => x.TopicId == top.Id).ToListAsync();
+
+                lesson.AddRange(le);
+                numberLesson += le.Count;
+            }
+            return (lesson,numberLesson);
+        }
+        private async Task<(int,int)> CountResource(List<Lesson> lesson,String id)
+        {
+            int numberResourceNotApp = 0;
+            int numberResource = 0;
+            foreach (var l in lesson)
+            {
+                var re = await _context.Resources.Where(x => x.LessonId == l.Id).ToListAsync();
+                var reNotApp = await _context.Resources.Where(x => x.LessonId == l.Id && x.Status == false).ToListAsync();
+                numberResourceNotApp += reNotApp.Count;
+                numberResource += re.Count;
+            }
+            return (numberResource,numberResourceNotApp);
         }
     }
 

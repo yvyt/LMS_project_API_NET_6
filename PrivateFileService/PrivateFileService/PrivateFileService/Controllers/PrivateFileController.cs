@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PrivateFileService.Data;
 using PrivateFileService.Model;
@@ -17,6 +18,8 @@ namespace PrivateFileService.Controllers
             _privateFileService = privateFileService;
         }
         [HttpPost("AddPrivateFile")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "CreatePrivateFile")]
         public async Task<IActionResult> AddPrivateFile([FromForm] PrivateFileUploadDTO privateFile)
         {
             var result = await _privateFileService.AddPrivateFile(privateFile);
@@ -27,6 +30,8 @@ namespace PrivateFileService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetAllFile")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewPrivateFile")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _privateFileService.GetAll();
@@ -37,6 +42,8 @@ namespace PrivateFileService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetById")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewPrivateFile")]
         public async Task<IActionResult> GetById(string id)
         {
             var result = await _privateFileService.GetById(id);
@@ -47,6 +54,8 @@ namespace PrivateFileService.Controllers
             return BadRequest(result);
         }
         [HttpPut("Rename")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "EditPrivateFile")]
         public async Task<IActionResult> RenameFile(string id, string newName)
         {
             var result = await _privateFileService.RenameFile(id,newName);
@@ -57,6 +66,8 @@ namespace PrivateFileService.Controllers
             return BadRequest(result);
         }
         [HttpDelete("DeletePF")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "DeletePrivateFile")]
         public async Task<IActionResult> DeletePF(string id)
         {
             var result = await _privateFileService.DeletePF(id);
@@ -67,6 +78,8 @@ namespace PrivateFileService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetActive")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewPrivateFile")]
         public async Task<IActionResult> GetActive()
         {
             var result = await _privateFileService.GetActive();
@@ -77,6 +90,8 @@ namespace PrivateFileService.Controllers
             return BadRequest(result);
         }
         [HttpGet("DownloadPF")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewPrivateFile")]
         public async Task<IActionResult> DownloadPF(string id)
         {
             var (fileStream, message) = await _privateFileService.DownloadPF(id);

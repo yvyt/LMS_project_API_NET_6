@@ -20,6 +20,8 @@ namespace CourseService.Controllers
             _lessonService = lessonService;
         }
         [HttpPost("create")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "CreateLesson")]
         public  async Task<IActionResult> CreateLesson([FromForm] LessonDTO lessonModel)
         {
             try
@@ -39,6 +41,7 @@ namespace CourseService.Controllers
             }
         }
         [HttpGet("GetAll")]
+        [Authorize(AuthenticationSchemes = "Bearer",Roles ="Leadership")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _lessonService.GetAll();
@@ -49,6 +52,8 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetByTopic")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewLesson")]
         public async Task<IActionResult> GetByTopic(string id)
         {
             var result = await _lessonService.GetByTopic(id);
@@ -59,6 +64,8 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpPut("EditTopic")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "EditLesson")]
         public async Task<IActionResult> EditLesson(string id, [FromForm] LessonDTO lessonDTO)
         {
             try
@@ -78,6 +85,8 @@ namespace CourseService.Controllers
             }
         }
         [HttpDelete("DeleteLesson")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "DeleteLesson")]
         public async Task<IActionResult> DeleteLesson(string id)
         {
             var result = await _lessonService.DeleteLesson(id);
@@ -88,6 +97,8 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetActiveLesson")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewLesson")]
         public async Task<IActionResult> GetActive()
         {
             var result = await _lessonService.GetActiveLesson();
@@ -98,6 +109,8 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetById")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewLesson")]
         public async Task<IActionResult> GetById(string id)
         {
             var result = await _lessonService.GetById(id);

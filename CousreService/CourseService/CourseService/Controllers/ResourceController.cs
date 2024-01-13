@@ -1,6 +1,7 @@
 ﻿using CourseService.Data;
 using CourseService.Model;
 using CourseService.Service.ResourceService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Headers;
@@ -18,6 +19,8 @@ namespace CourseService.Controllers
             _context=context;
         }
         [HttpPost("AddResource")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "CreateResource")]
         public async Task<IActionResult> AddResult([FromForm]  ResourceDTO resouceDTO)
         {
              var result = await _resourceService.AddResouce(resouceDTO);
@@ -29,6 +32,7 @@ namespace CourseService.Controllers
 
         }
         [HttpGet("GetAll")]
+        [Authorize(AuthenticationSchemes = "Bearer",Roles ="Leadership")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _resourceService.GetAll();
@@ -39,6 +43,8 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetById")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewResource")]
         public async Task<IActionResult> GetById(string id)
         {
             var result = await _resourceService.GetById(id);
@@ -49,6 +55,8 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetByLesson")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewResource")]
         public async Task<IActionResult> GetByLesson(string id)
         {
             var result = await _resourceService.GetByLesson(id);
@@ -59,6 +67,8 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpPut("EditResouce")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "EditResource")]
         public async Task<IActionResult> Edit([FromForm] ResourceDTO resourceDTO)
         {
             var result = await _resourceService.EditResource(resourceDTO);
@@ -69,6 +79,8 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpDelete("DeleteResource")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "DeleteResource")]
         public async Task<IActionResult> DeleteResource(string id)
         {
             var result = await _resourceService.DeleteResource(id);
@@ -79,6 +91,8 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetActiveResource")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewResource")]
         public async Task<IActionResult> GetActive()
         {
             var result = await _resourceService.GetActive();
@@ -89,6 +103,8 @@ namespace CourseService.Controllers
             return  BadRequest(result);
         }
         [HttpGet("DownloadResource")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewResource")]
         public async Task<IActionResult> DownloadPF(string id)
         {
             var (fileStream, message) = await _resourceService.DownloadResource(id);

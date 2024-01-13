@@ -8,8 +8,10 @@ namespace CourseService.Service.ClassesService
         Task<ManagerRespone> AddClasses (ClassDTO classes);
         Task<ManagerRespone> DeleteClass(string id);
         Task<ManagerRespone> EditClass(string id,ClassDTO classDTO);
-        Task<List<ClassDTO>> GetActiveClasses();
-        Task<List<ClassDTO>> GetAll();
+        Task<List<ClassesDetails>> GetActiveClasses();
+        Task<List<ClassesDetails>> GetAll();
         Task<ClassDTO> GetById(string id);
+        Task<ClassesDetails> GetDetailClass(string id);
+
     }
 }

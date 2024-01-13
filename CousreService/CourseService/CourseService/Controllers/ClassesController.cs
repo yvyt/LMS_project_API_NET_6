@@ -16,7 +16,8 @@ namespace CourseService.Controllers
             _classesService = classService;
         }
         [HttpPost("AddClasses")]
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Leadership")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "CreateClass")]
 
         public async Task<IActionResult> AddClasses(ClassDTO classDTO)
         {
@@ -28,7 +29,7 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpGet("ManagerClass")]
-        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(AuthenticationSchemes = "Bearer",Roles ="Leadership")]
         public async Task<IActionResult> GetAllClasses()
         {
             var result = await _classesService.GetAll();
@@ -40,7 +41,7 @@ namespace CourseService.Controllers
         }
         [HttpGet("GetClassById")]
         [Authorize(AuthenticationSchemes = "Bearer")]
-
+        [Authorize(Policy = "ViewClass")]
         public async Task<IActionResult> GetById(string id)
         {
             var result = await _classesService.GetById(id);
@@ -51,7 +52,8 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpPut("EditClasses")]
-        [Authorize(AuthenticationSchemes = "Bearer", Roles ="Leadership")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "EditClass")]
         public async Task<IActionResult> EditClass(string id, ClassDTO classDTO)
         {
             var result = await _classesService.EditClass(id,classDTO);
@@ -62,7 +64,8 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpDelete("DeleteClass")]
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Leadership")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "DeleteClass")]
         public async Task<IActionResult> DeleteClass(string id)
         {
             var result = await _classesService.DeleteClass(id);
@@ -73,7 +76,8 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetActiveClass")]
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Leadership")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewClass")]
         public async Task<IActionResult> GetActiveClass()
         {
             var result = await _classesService.GetActiveClasses();
@@ -83,6 +87,17 @@ namespace CourseService.Controllers
             }
             return BadRequest(result);
         }
-
+        [HttpGet("GetDetails")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewClass")]
+        public async Task<IActionResult> GetDetailClasses(string id)
+        {
+            var result = await _classesService.GetDetailClass(id);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
     }
 }

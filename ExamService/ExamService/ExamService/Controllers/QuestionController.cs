@@ -1,5 +1,6 @@
 ﻿using ExamService.Model;
 using ExamService.Service.QuestionService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,6 +16,8 @@ namespace ExamService.Controllers
             _questionService = questionService;
         }
         [HttpPost("AddQuestion")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "CreateQuestion")]
         public async Task<IActionResult> AddQuestion(QuestionDTO questionDTO)
         {
             var result = await _questionService.AddQuestion(questionDTO);
@@ -25,6 +28,7 @@ namespace ExamService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetAll")]
+        [Authorize(AuthenticationSchemes = "Bearer",Roles ="Leadership")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _questionService.GetAll();
@@ -35,6 +39,8 @@ namespace ExamService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetById")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewQuestion")]
         public async Task<IActionResult> GetById(string id)
         {
             var result = await _questionService.GetById(id);
@@ -45,6 +51,8 @@ namespace ExamService.Controllers
             return BadRequest(result);
         }
         [HttpPut("EditQuestion")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "EditQuestion")]
         public async Task<IActionResult> EditQuestion(QuestionDTO questionDTO)
         {
             var result = await _questionService.EditQuestion(questionDTO);
@@ -55,6 +63,8 @@ namespace ExamService.Controllers
             return BadRequest(result);
         }
         [HttpDelete("DeleteQuestion")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "DeleteQuestion")]
         public async Task<IActionResult> DeleteQuestion(string id)
         {
             var result = await _questionService.DeleteQuestion(id);
@@ -65,6 +75,8 @@ namespace ExamService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetActive")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewQuestion")]
         public async Task<IActionResult> GetActive()
         {
             var result = await _questionService.GetActive();

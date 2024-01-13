@@ -55,13 +55,6 @@ namespace UserService.Controller
             }
             return BadRequest(result);
         }
-        [HttpGet("Test")]
-        public async Task<IActionResult> Confirm(string email)
-        {
-            var result = await _userService.SendMailAsync(email);
-           
-            return Ok(result);
-        }
         [HttpPost("LoginWithOTP")]
         public async Task<IActionResult> LoginWithOTP(string otp, string email)
         {
@@ -73,7 +66,8 @@ namespace UserService.Controller
             return BadRequest(result);
         }
         [HttpGet("UserManager")]
-        [Authorize(AuthenticationSchemes = "Bearer",Roles ="Leadership")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "ViewUser")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _userService.GetAll();
@@ -134,6 +128,7 @@ namespace UserService.Controller
             return Ok(_userService.LogOut());
         }
         [HttpGet("UserByToken")]
+
         public async Task<IActionResult> GetByToken(string token)
         {
             var result = await _userService.GetUserByToken(token);
@@ -146,7 +141,23 @@ namespace UserService.Controller
                 Message = "Don't have user with: " + token
             });
         }
-        
+        [HttpPost("CreateUser")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Policy = "CreateUser")]
+        public async Task<IActionResult> CreateUser([FromBody] RegisterUser user, string role)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _userService.RegisterUserAsync(user, role);
+                if (result.IsSuccess)
+                {
+                    return Ok(result);
+                }
+
+                return BadRequest(result);
+            }
+            return BadRequest("Something is not valid");
+        }
     }
   
 }

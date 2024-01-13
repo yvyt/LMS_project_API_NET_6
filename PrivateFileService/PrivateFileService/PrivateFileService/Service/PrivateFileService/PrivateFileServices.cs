@@ -254,6 +254,8 @@ namespace PrivateFileService.Service.PrivateFileService
 
                     }
                     file.Name = newName + Path.GetExtension(oldName);
+                    file.UpdatedAt = DateTime.Now;
+                    file.updateBy = user.Id;
                     _context.PrivateFiles.Update(file);
                     int number = await _context.SaveChangesAsync();
                     if (number > 0)
