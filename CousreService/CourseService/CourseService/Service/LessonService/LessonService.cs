@@ -49,7 +49,23 @@ namespace CourseService.Service.LessonService
                         };
                     }
                     var classes = await _context.Classes.FirstOrDefaultAsync(c => c.Id == topic.ClassId);
+                    if (user.Id != classes.Teacher)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You not have permission to add lesson to this class",
+                            IsSuccess = false,
+                        };
+                    }
                     string path = $"Upload/{classes.Name}/{topic.Name}/Lesson";
+                    if (lessonDTO.FileContent == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You need to upload file",
+                            IsSuccess = false,
+                        };
+                    }
                     var document = await _documenService.UploadFile(lessonDTO.FileContent, path);
                     if (document == null)
                     {
@@ -163,6 +179,11 @@ namespace CourseService.Service.LessonService
                     {
                         return null;
                     }
+                    var classes = await _context.Classes.FirstOrDefaultAsync(cl => cl.Id == topic.ClassId);
+                    if (classes == null || classes.Teacher!=user.Id)
+                    {
+                        return null;
+                    }
                     var lessons = _context.Lessons.Where(l => l.TopicId == id).ToList();
                     if (lessons == null)
                     {
@@ -245,6 +266,14 @@ namespace CourseService.Service.LessonService
                     }
 
                     var classes = await _context.Classes.FirstOrDefaultAsync(c => c.Id == topic.ClassId);
+                    if (user.Id != classes.Teacher)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You not have permission to add lesson to this class",
+                            IsSuccess = false,
+                        };
+                    }
                     string path = $"Upload/{classes.Name}/{topic.Name}/Lesson";
                     var document = await _documenService.UploadFile(lessonDTO.FileContent, path);
                     if (document == null)
@@ -318,8 +347,24 @@ namespace CourseService.Service.LessonService
                             IsSuccess = false
                         };
                     }
-
-
+                    var topic = await _context.Topics.FirstOrDefaultAsync(t => t.Id == less.TopicId);
+                    if (topic == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist topic with id={less.TopicId}",
+                            IsSuccess = false
+                        };
+                    }
+                    var classes = await _context.Classes.FirstOrDefaultAsync(cl => cl.Id == topic.ClassId);
+                    if (classes == null || classes.Teacher != user.Id)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist classes with id={topic.ClassId}",
+                            IsSuccess = false
+                        };
+                    }
                     less.IsActive = false;
                     less.UpdatedAt = DateTime.Now;
                     _context.Lessons.Update(less);
@@ -376,20 +421,28 @@ namespace CourseService.Service.LessonService
                         {
                             return null;
                         }
+                        var classes = await _context.Classes.FirstOrDefaultAsync(cl => cl.Id == topic.ClassId);
+                        if (classes == null)
+                        {
+                            return null;
+                        }
                         var typ = await _context.TypeFiles.FirstOrDefaultAsync(t => t.Id == lesson.TypeId);
                         if (typ == null)
                         {
                             return null;
                         }
-                        LessonDTO lessonDTO = new LessonDTO
+                        if (user.Id == classes.Teacher)
                         {
-                            Id = lesson.Id,
-                            Topic = topic.Name,
-                            Title = lesson.Title,
-                            Type = typ.Name,
+                            LessonDTO lessonDTO = new LessonDTO
+                            {
+                                Id = lesson.Id,
+                                Topic = topic.Name,
+                                Title = lesson.Title,
+                                Type = typ.Name,
 
-                        };
-                        r.Add(lessonDTO);
+                            };
+                            r.Add(lessonDTO);
+                        }
                     }
                     return r;
                 }

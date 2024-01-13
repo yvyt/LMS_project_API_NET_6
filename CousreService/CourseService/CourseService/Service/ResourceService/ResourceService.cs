@@ -4,6 +4,8 @@ using CourseService.Service.DocumentService;
 using Microsoft.EntityFrameworkCore;
 using System.Resources;
 using CourseService.Model;
+using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace CourseService.Service.ResourceService
 {
@@ -50,6 +52,14 @@ namespace CourseService.Service.ResourceService
                     }
                     var topic = await _context.Topics.FirstOrDefaultAsync(t => t.Id == lesson.TopicId);
                     var classes = await _context.Classes.FirstOrDefaultAsync(c => c.Id == topic.ClassId);
+                    if (user.Id != classes.Teacher)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You not have permission to add resource to this class",
+                            IsSuccess = false,
+                        };
+                    }
                     string path = $"Upload/{classes.Name}/{topic.Name}/Resources";
                     if (resouceDTO.FileContent == null)
                     {
@@ -199,7 +209,7 @@ namespace CourseService.Service.ResourceService
 
         }
 
-        public async Task<List<ResourceDTO>> GetByLesson(string id)
+        public async Task<List<ResourceDetails>> GetByLesson(string id)
         {
             var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
@@ -208,13 +218,14 @@ namespace CourseService.Service.ResourceService
             {
                 try
                 {
+                    
                     var lessons= await _context.Lessons.FirstOrDefaultAsync(ls=>ls.Id==id);
                     if(lessons == null)
                     {
                         return null;
                     }
                     var res = _context.Resources.Where(r => r.LessonId == lessons.Id).ToList();
-                    List<ResourceDTO> rs = new List<ResourceDTO>();
+                    List<ResourceDetails> rs = new List<ResourceDetails>();
 
                     foreach (var r in res){
                         var typ = await _context.TypeFiles.FirstOrDefaultAsync(t => t.Id == r.TypeId);
@@ -222,12 +233,28 @@ namespace CourseService.Service.ResourceService
                         {
                             return null;
                         }
-                        ResourceDTO resource = new ResourceDTO
+                        var sta = "Awaiting approval";
+                        if (r.Status == true)
+                        {
+                            sta = "Approved";
+                        }
+                        var owner = await GetUsersFromUserServiceAsync(r.createBy, accessToken);
+                        if (owner == null)
+                        {
+                            return null;
+                        }
+                        var updateBy= await GetUsersFromUserServiceAsync(r.updateBy, accessToken);
+                        ResourceDetails resource = new ResourceDetails
                         {
                             Id = r.Id,
                             Lesson = lessons.Title,
                             Type = typ.Name,
                             Name = r.Name,
+                            Status=sta,
+                            CreateAt=r.CreatedAt.ToString(),
+                            CreateBy=owner.UserName,
+                            UpdateAt=r.UpdatedAt.ToString(),
+                            UpdateBy=updateBy.UserName,
                         };
                         rs.Add(resource);
                     }
@@ -288,6 +315,14 @@ namespace CourseService.Service.ResourceService
                     }
                     var topic = await _context.Topics.FirstOrDefaultAsync(t => t.Id == lesson.TopicId);
                     var classes = await _context.Classes.FirstOrDefaultAsync(c => c.Id == topic.ClassId);
+                    if (user.Id != classes.Teacher)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You not have permission to add resource to this class",
+                            IsSuccess = false,
+                        };
+                    }
                     string path = $"Upload/{classes.Name}/{topic.Name}/Resources";
                     var document = await _context.Documents.FirstOrDefaultAsync(d => d.DocumentId == res.DocumentId);
                     if(resourceDTO.FileContent!=null)
@@ -492,6 +527,78 @@ namespace CourseService.Service.ResourceService
                 }
             }
             return (null, $"Unthorize");
+        }
+
+        public async Task<ManagerRespone> ApproveResource(string id)
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var res = await _context.Resources.FirstOrDefaultAsync(r => r.Id == id);
+                    if (res == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist resource with id={id}",
+                            IsSuccess = false
+                        };
+                    }
+                    res.Status = true;
+                    res.UpdatedAt = DateTime.Now;
+                    res.updateBy = user.Id;
+                    _context.Resources.Update(res);
+                    int number = await _context.SaveChangesAsync();
+                    if (number == 0)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Error when update lesson",
+                            IsSuccess = false,
+                        };
+                    }
+                    return new ManagerRespone
+                    {
+                        Message = $"Successfully saved {number} changes to the database.",
+                        IsSuccess = true,
+                    };
+                }
+
+                catch (Exception ex)
+                {
+                    return new ManagerRespone
+                    {
+                        Message = $"Error when update Lesson {ex.StackTrace}",
+                        IsSuccess = false
+                    };
+                }
+            }
+            return new ManagerRespone
+            {
+                Message = $"Unauthorize",
+                IsSuccess = false
+            };
+        }
+        public async Task<UserDTO> GetUsersFromUserServiceAsync(string id, string accessToken)
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            var response = await _httpClient.GetAsync($"https://localhost:44357/User/UserById?id={id}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Deserialize the response content to your User class
+                var jsonContent = await response.Content.ReadAsStringAsync();
+                var user = JsonSerializer.Deserialize<UserDTO>(jsonContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                return user;
+            }
+            return null;
         }
     }
 }

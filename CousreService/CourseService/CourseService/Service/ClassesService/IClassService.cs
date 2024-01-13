@@ -11,6 +11,7 @@ namespace CourseService.Service.ClassesService
         Task<List<ClassesDetails>> GetActiveClasses();
         Task<List<ClassesDetails>> GetAll();
         Task<ClassDTO> GetById(string id);
+        Task<List<ClassesDetails>> GetCurrentClass();
         Task<ClassesDetails> GetDetailClass(string id);
 
     }

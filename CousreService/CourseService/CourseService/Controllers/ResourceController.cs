@@ -13,10 +13,9 @@ namespace CourseService.Controllers
     public class ResourceController : ControllerBase
     {
         private readonly IResourceService _resourceService;
-        private readonly CourseContext _context;
-        public ResourceController(IResourceService resourceService,CourseContext context) {
+        public ResourceController(IResourceService resourceService) {
             _resourceService=resourceService;
-            _context=context;
+       
         }
         [HttpPost("AddResource")]
         [Authorize(AuthenticationSchemes = "Bearer")]
@@ -118,6 +117,17 @@ namespace CourseService.Controllers
                 return File(fileStream, "application/octet-stream", message);
             }
             return BadRequest(message);
+        }
+        [HttpPut("ApproveResource")]
+        [Authorize(AuthenticationSchemes = "Bearer",Roles ="Leadership")]
+        public async Task<IActionResult> ApproveResource(string id)
+        {
+            var result = await _resourceService.ApproveResource(id);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
     }
 }

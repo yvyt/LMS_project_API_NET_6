@@ -469,6 +469,52 @@ namespace CourseService.Service.ClassesService
             }
             return (numberResource,numberResourceNotApp);
         }
+
+        public async Task<List<ClassesDetails>> GetCurrentClass()
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var classes = await _context.Classes.Where(c =>c.Teacher==user.Id).ToListAsync();
+                    List<ClassesDetails> result = new List<ClassesDetails>();
+                    foreach (var clazz in classes)
+                    {
+                        var courseName = _context.Courses.FirstOrDefault(c => c.Id == clazz.CourseId);
+                        if (courseName == null)
+                        {
+                            return null;
+                        }
+                        var TeacherName = await GetUsersFromUserServiceAsync(clazz.Teacher, accessToken);
+                        if (TeacherName == null)
+                        {
+                            return null;
+                        }
+                        var (lesson, numberLesson) = await CountLesson(clazz.Id);
+                        var (numberResource, numberResourceNotApp) = await CountResource(lesson, clazz.Id);
+                        ClassesDetails classDTO = new ClassesDetails
+                        {
+                            Id = clazz.Id,
+                            Name = clazz.Name,
+                            Course = courseName.Name,
+                            Teacher = TeacherName.UserName,
+                            Description = clazz.Description,
+                            NumberOfLesson = numberLesson.ToString(),
+                            NumberOfResource = $"{numberResourceNotApp}/{numberResource}",
+                        };
+                        result.Add(classDTO);
+                    }
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+            }
+            return null;
+        }
     }
 
 }

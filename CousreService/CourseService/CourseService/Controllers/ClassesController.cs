@@ -99,5 +99,17 @@ namespace CourseService.Controllers
             }
             return BadRequest(result);
         }
+        [HttpGet("GetCurrentClass")]
+        [Authorize(AuthenticationSchemes = "Bearer",Roles ="Teacher")]
+        [Authorize(Policy = "ViewClass")]
+        public async Task<IActionResult> GetCurrentClass()
+        {
+            var result = await _classesService.GetCurrentClass();
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
     }
 }

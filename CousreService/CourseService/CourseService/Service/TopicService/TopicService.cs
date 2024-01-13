@@ -41,6 +41,14 @@ namespace CourseService.Service.TopicService
                         };
 
                     }
+                    if (user.Id != classes.Teacher)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You not have permission to add topic to this class",
+                            IsSuccess = false,
+                        };
+                    }
                     Topic topic = new Topic
                     {
                         Name = topicDTO.Name,
@@ -146,10 +154,15 @@ namespace CourseService.Service.TopicService
                         return null;
                     }
                     var classes = await _context.Classes.FirstOrDefaultAsync(c => c.Id == topic.ClassId);
+                    
                     if (classes == null || classes.IsActive == false)
                     {
                         return null;
 
+                    }
+                    if (user.Id != classes.Teacher)
+                    {
+                        return null;
                     }
                     TopicDTO topicDTO = new TopicDTO
                     {
@@ -182,6 +195,10 @@ namespace CourseService.Service.TopicService
                     {
                         return null;
 
+                    }
+                    if (user.Id != classes.Teacher)
+                    {
+                        return null;
                     }
                     var topics = _context.Topics.Where(c => c.ClassId == classes.Id).ToList() ;
                     List<TopicDTO> result = new List<TopicDTO>();
@@ -238,6 +255,14 @@ namespace CourseService.Service.TopicService
                             IsSuccess = false,
                         };
 
+                    }
+                    if (user.Id != classes.Teacher)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You not have permission to edit topic to this class",
+                            IsSuccess = false,
+                        };
                     }
                     string oldPath = $"Upload/{classes.Name}/{topic.Name}";
                     string newPath = $"Upload/{classes.Name}/{topicDTO.Name}";
@@ -322,6 +347,14 @@ namespace CourseService.Service.TopicService
                         };
 
                     }
+                    if (user.Id != classes.Teacher)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You don't have permission to delete this topic",
+                            IsSuccess = false,
+                        };
+                    }
                     topic.IsActive = false;
                     topic.UpdatedAt = DateTime.Now;
                     _context.Topics.Update(topic);
@@ -369,17 +402,21 @@ namespace CourseService.Service.TopicService
                 {
                     var topics = _context.Topics.Where(c=>c.IsActive==true).ToList();
                     List<TopicDTO> result = new List<TopicDTO>();
-
                     foreach (var t in topics)
                     {
                         var classes = await _context.Classes.FirstOrDefaultAsync(cl => cl.Id == t.ClassId);
-                        TopicDTO topicDTO = new TopicDTO
+                        if (classes.Teacher == user.Id)
                         {
-                            Id = t.Id,
-                            Name = t.Name,
-                            Class = classes.Name
-                        };
-                        result.Add(topicDTO);
+                            TopicDTO topicDTO = new TopicDTO
+                            {
+                                Id = t.Id,
+                                Name = t.Name,
+                                Class = classes.Name
+                            };
+                            result.Add(topicDTO);
+
+                        }
+
                     }
                     return result;
 
