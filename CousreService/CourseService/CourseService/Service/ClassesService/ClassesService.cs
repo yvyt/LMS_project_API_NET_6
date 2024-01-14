@@ -315,6 +315,15 @@ namespace CourseService.Service.ClassesService
                     cl.IsActive = false;
                     cl.UpdatedAt = DateTime.Now;
                     _context.Classes.Update(cl);
+
+                    var topics = await _context.Topics.Where(t=>t.ClassId==id).ToListAsync();
+                    foreach(var topic in topics)
+                    {
+                        topic.IsActive = false;
+                        topic.UpdatedAt= DateTime.Now;
+                        _context.Topics.Update(topic);
+                        await DeleteLesson(_context,topic);
+                    }
                     int numberOfChanges = await _context.SaveChangesAsync();
                     if (numberOfChanges > 0)
                     {
@@ -344,6 +353,17 @@ namespace CourseService.Service.ClassesService
                 Message = $"Unthorize",
                 IsSuccess = false,
             };
+        }
+
+        private async Task DeleteLesson(CourseContext context, Topic topic)
+        {
+            var lessons = await _context.Lessons.Where(x => x.TopicId == topic.Id).ToListAsync();
+            foreach(var le in lessons)
+            {
+                le.IsActive = false;
+                le.UpdatedAt= DateTime.Now;
+                _context.Lessons.Update(le);
+            }
         }
 
         public async Task<List<ClassesDetails>> GetActiveClasses()

@@ -223,7 +223,7 @@ namespace ExamService.Service.ExamService
             return null;
         }
 
-        public async Task<ExamDTO> GetById(string id)
+        public async Task<ExamDetail> GetById(string id)
         {
             var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
             var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
@@ -247,16 +247,41 @@ namespace ExamService.Service.ExamService
                     {
                         return null;
                     }
+                    var multiple = "multiple-choice";
+                    if (exam.IsMutipleChoice == false)
+                    {
+                        multiple = "Essay";
+                    }
+                    var createBy = await GetUsersFromUserServiceAsync(exam.createBy, accessToken);
+                    if (createBy == null)
+                    {
+                        return null;
+                    }
+                    var updateBy=await GetUsersFromUserServiceAsync(exam.updateBy,accessToken);
+                    if(updateBy == null)
+                    {
+                        return null;
+                    }
+                    var Status = "Awaiting Approved";
+                    if (exam.Status == true)
+                    {
+                        Status = "Approved";
+                    }
                     if (classes.Teacher == user.Id)
                     {
-                        ExamDTO examDTO = new ExamDTO
+                        ExamDetail examDTO = new ExamDetail
                         {
                             Id = exam.Id,
                             Name = exam.Name,
                             Type = typ.Name,
                             Class = classes.Name,
-                            IsMutipleChoice = exam.IsMutipleChoice,
-                            NumberQuestion = exam.NumberQuestion,
+                            IsMutipleChoice = multiple,
+                            NumberQuestion = exam.NumberQuestion.ToString(),
+                            Status=Status,
+                            CreateAt = exam.CreatedAt.ToString(),
+                            CreateBy = createBy.UserName,
+                            UpdateAt= exam.UpdatedAt.ToString(),
+                            UpdateBy= updateBy.UserName,
                         };
                         return examDTO;
                     }
@@ -560,6 +585,78 @@ namespace ExamService.Service.ExamService
                     // Handle exceptions appropriately
                     return null;
                 }
+            }
+            return null;
+        }
+
+        public async Task<ManagerRespone> ApproveExam(string id)
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    var ex = await _context.Exams.FirstOrDefaultAsync(r => r.Id == id);
+                    if (ex == null)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't exist exam with id={id}",
+                            IsSuccess = false
+                        };
+                    }
+                    ex.Status = true;
+                    ex.UpdatedAt = DateTime.Now;
+                    ex.updateBy = user.Id;
+                    _context.Exams.Update(ex);
+                    int number = await _context.SaveChangesAsync();
+                    if (number == 0)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Error when update approve exam",
+                            IsSuccess = false,
+                        };
+                    }
+                    return new ManagerRespone
+                    {
+                        Message = $"Successfully saved {number} changes to the database.",
+                        IsSuccess = true,
+                    };
+                }
+
+                catch (Exception ex)
+                {
+                    return new ManagerRespone
+                    {
+                        Message = $"Error when approve exam {ex.StackTrace}",
+                        IsSuccess = false
+                    };
+                }
+            }
+            return new ManagerRespone
+            {
+                Message = $"Unauthorize",
+                IsSuccess = false
+            };
+        }
+        public async Task<UserDTO> GetUsersFromUserServiceAsync(string id, string accessToken)
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            var response = await _httpClient.GetAsync($"https://localhost:44357/User/UserById?id={id}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Deserialize the response content to your User class
+                var jsonContent = await response.Content.ReadAsStringAsync();
+                var user = JsonSerializer.Deserialize<UserDTO>(jsonContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                return user;
             }
             return null;
         }

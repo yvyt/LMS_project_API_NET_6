@@ -3,6 +3,7 @@ using ExamService.Service.ExamService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.Design;
 
 namespace ExamService.Controllers
 {
@@ -75,7 +76,6 @@ namespace ExamService.Controllers
             return BadRequest(result);
         }
         [HttpGet("GetActive")]
-        [Authorize(AuthenticationSchemes = "Bearer")]
         [Authorize(Policy = "ViewExam")]
         public async Task<IActionResult> GetActive()
         {
@@ -86,5 +86,17 @@ namespace ExamService.Controllers
             }
             return BadRequest(result);
         }
+        [HttpPut("ApproveResource")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Leadership")]
+        public async Task<IActionResult> ApproveExam(string id)
+        {
+            var result = await _examService.ApproveExam(id);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        
     }
 }

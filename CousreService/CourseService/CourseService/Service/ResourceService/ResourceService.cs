@@ -627,7 +627,7 @@ namespace CourseService.Service.ResourceService
                     {
                         return new ManagerRespone
                         {
-                            Message = $"Error when update lesson",
+                            Message = $"Error when approve resource",
                             IsSuccess = false,
                         };
                     }
@@ -642,7 +642,7 @@ namespace CourseService.Service.ResourceService
                 {
                     return new ManagerRespone
                     {
-                        Message = $"Error when update Lesson {ex.StackTrace}",
+                        Message = $"Error when approve resource {ex.StackTrace}",
                         IsSuccess = false
                     };
                 }
