@@ -189,7 +189,7 @@ namespace CourseService.Service.ClassesService
                     {
                         Name = classes.Name,
                         Course = courses.Name,
-                        Teacher = teacher.UserName,
+                        Teacher = teacher.Id,
                         Description = classes.Description,
                         Id = classes.Id,
                     };

@@ -60,6 +60,14 @@ namespace ExamService.Service.ExamService
                         }
                         documentId = document.DocumentId;
                     }
+                    if (classes.Teacher != user.Id)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You don't have permission to create exam to this class",
+                            IsSuccess = false,
+                        };
+                    }
                     Exam ex = new Exam
                     {
                         Name = examDTO.Name,
@@ -239,16 +247,20 @@ namespace ExamService.Service.ExamService
                     {
                         return null;
                     }
-                    ExamDTO examDTO = new ExamDTO
+                    if (classes.Teacher == user.Id)
                     {
-                        Id = exam.Id,
-                        Name = exam.Name,
-                        Type = typ.Name,
-                        Class = classes.Name,
-                        IsMutipleChoice = exam.IsMutipleChoice,
-                        NumberQuestion = exam.NumberQuestion,
-                    };
-                    return examDTO;
+                        ExamDTO examDTO = new ExamDTO
+                        {
+                            Id = exam.Id,
+                            Name = exam.Name,
+                            Type = typ.Name,
+                            Class = classes.Name,
+                            IsMutipleChoice = exam.IsMutipleChoice,
+                            NumberQuestion = exam.NumberQuestion,
+                        };
+                        return examDTO;
+                    }
+
                 }
                 catch (Exception ex)
                 {
@@ -285,6 +297,14 @@ namespace ExamService.Service.ExamService
                             IsSuccess = false,
                         };
                     }
+                    if (classes.Teacher != user.Id)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You don't have permission to edit exam in this class",
+                            IsSuccess = false,
+                        };
+                    }
                     var typ = await _context.ExamsType.FirstOrDefaultAsync(t => t.Name == examDTO.Type);
                     if (typ == null)
                     {
@@ -300,10 +320,10 @@ namespace ExamService.Service.ExamService
                     if (d != null)
                     {
                         link = d.Link;
-                        documentId=d.DocumentId;
+                        documentId = d.DocumentId;
                     }
                     var path = $"Upload/{classes.Name}/Exams/";
-                    if (d!=null && examDTO.FileContent != null)
+                    if (d != null && examDTO.FileContent != null)
                     {
                         var document = await UploadExamFileFromCourseServiceAsync(examDTO.FileContent, path, accessToken);
                         if (document == null)
@@ -324,8 +344,8 @@ namespace ExamService.Service.ExamService
                     exam.IsMutipleChoice = examDTO.IsMutipleChoice;
                     exam.UpdatedAt = DateTime.Now;
                     exam.updateBy = user.Id;
-                    
-                    exam.DocumentId = d == null ? null :documentId ;
+
+                    exam.DocumentId = d == null ? null : documentId;
                     _context.Exams.Update(exam);
                     int numberOfChanges = await _context.SaveChangesAsync();
                     if (numberOfChanges == 0)
@@ -337,7 +357,7 @@ namespace ExamService.Service.ExamService
                         };
                     }
 
-                    if (examDTO.FileContent != null && d!=null)
+                    if (examDTO.FileContent != null && d != null)
                     {
                         try
                         {
@@ -452,6 +472,16 @@ namespace ExamService.Service.ExamService
                             IsSuccess = false
                         };
                     }
+                    var classes = await GetClassFromClassServiceAsync(ex.ClassId, accessToken);
+
+                    if (classes.Teacher != user.Id)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You don't have permission to delete this exam",
+                            IsSuccess = false
+                        };
+                    }
                     ex.IsActive = false;
                     ex.UpdatedAt = DateTime.Now;
                     _context.Exams.Update(ex);
@@ -508,16 +538,19 @@ namespace ExamService.Service.ExamService
                         {
                             return null;
                         }
-                        ExamDTO examDTO = new ExamDTO
+                        if (classes.Teacher == user.Id)
                         {
-                            Id = exam.Id,
-                            Name = exam.Name,
-                            Type = typ.Name,
-                            Class = classes.Name,
-                            IsMutipleChoice = exam.IsMutipleChoice,
-                            NumberQuestion = exam.NumberQuestion,
-                        };
-                        result.Add(examDTO);
+                            ExamDTO examDTO = new ExamDTO
+                            {
+                                Id = exam.Id,
+                                Name = exam.Name,
+                                Type = typ.Name,
+                                Class = classes.Name,
+                                IsMutipleChoice = exam.IsMutipleChoice,
+                                NumberQuestion = exam.NumberQuestion,
+                            };
+                            result.Add(examDTO);
+                        }
                     }
                     return result;
 
