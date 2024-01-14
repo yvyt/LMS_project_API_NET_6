@@ -191,5 +191,43 @@ namespace CourseService.Service.StudentCourseService
                 IsSuccess = false,
             };
         }
+
+        public async Task<List<StudentCourseDetail>> CurrentClass()
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    
+                    var students = await _context.StudentCourses.Where(s => s.StudentId == user.Id).ToListAsync();
+                    List<StudentCourseDetail> result = new List<StudentCourseDetail>();
+                    foreach (var student in students)
+                    {
+                        var st = await GetUsersFromUserServiceAsync(student.StudentId, accessToken);
+                        var classes = await _context.Classes.FirstOrDefaultAsync(x => x.Id == student.ClassId);
+                        if (st != null)
+                        {
+                            StudentCourseDetail detail = new StudentCourseDetail
+                            {
+                                id = student.Id,
+                                Class = classes.Name,
+                                Student = st.UserName
+                            };
+                            result.Add(detail);
+                        }
+                    }
+                    return result;
+
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+            }
+            return null;
+        }
     }
 }

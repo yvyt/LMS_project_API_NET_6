@@ -51,6 +51,17 @@ namespace CourseService.Controllers
             }
             return BadRequest(result);
         }
+        [HttpGet("CurrentClass")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Student")]
 
+        public async Task<IActionResult> CurrentClass()
+        {
+            var result = await _service.CurrentClass();
+            if (result!=null)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
     }
 }
