@@ -26,7 +26,6 @@ namespace ExamService.Service.QuestionService
             {
                 try
                 {
-
                     var classes = await GetClassFromClassServiceAsync(questionDTO.Class, accessToken);
                     if (classes == null)
                     {
@@ -36,7 +35,14 @@ namespace ExamService.Service.QuestionService
                             IsSuccess = false,
                         };
                     }
-
+                    if (classes.Teacher != user.Id)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You don't have permission to add question to this class",
+                            IsSuccess = false,
+                        };
+                    }
                     Question question = new Question
                     {
                         ClassId = questionDTO.Class,
@@ -202,6 +208,15 @@ namespace ExamService.Service.QuestionService
                             IsSuccess = false,
                         };
                     }
+                    
+                    if (user.Id != q.createBy)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You don't have permission to edit this question",
+                            IsSuccess = false,
+                        };
+                    }
                     q.ContentQuestion = questionDTO.ContentQuestion;
                     q.ClassId = questionDTO.Class;
                     q.IsMultipleAnswer= questionDTO.IsMultipleAnswer;
@@ -262,6 +277,14 @@ namespace ExamService.Service.QuestionService
                         return new ManagerRespone
                         {
                             Message = $"Don't exist class with id= {q.ClassId}.",
+                            IsSuccess = false,
+                        };
+                    }
+                    if (user.Id != q.createBy)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You don't have permission to delete this question",
                             IsSuccess = false,
                         };
                     }

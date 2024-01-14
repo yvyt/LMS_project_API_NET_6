@@ -33,7 +33,14 @@ namespace ExamService.Service.AnswerService
                             IsSuccess = false,
                         };
                     }
-
+                    if (question.createBy != user.Id)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You don't have permission to create answer for this question",
+                            IsSuccess = false,
+                        };
+                    }
                     Answer answer = new Answer
                     {
                         ContentAnswer = answerDTO.ContentAnswer,
@@ -253,6 +260,14 @@ namespace ExamService.Service.AnswerService
                             IsSuccess = false,
                         };
                     }
+                    if (question.createBy != user.Id)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You don't have permission to edit answer for this question",
+                            IsSuccess = false,
+                        };
+                    }
                     answer.ContentAnswer = answerDTO.ContentAnswer;
                     answer.QuestionId = answerDTO.Question;
                     answer.IsCorrect = answerDTO.IsCorrect;
@@ -316,6 +331,15 @@ namespace ExamService.Service.AnswerService
                         return new ManagerRespone
                         {
                             Message = $"Don't exist question with id= {answer.QuestionId}.",
+                            IsSuccess = false,
+                        };
+                    }
+                    
+                    if (question.createBy != user.Id)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You don't have permission to delete for this question",
                             IsSuccess = false,
                         };
                     }

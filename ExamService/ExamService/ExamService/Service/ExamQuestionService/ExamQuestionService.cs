@@ -35,6 +35,7 @@ namespace ExamService.Service.ExamQuestionService
                             IsSuccess = false,
                         };
                     }
+                    
                     var typ = await _context.ExamsType.FirstOrDefaultAsync(t => t.Name == examQuestionDTO.Type);
                     if (typ == null)
                     {
@@ -44,22 +45,15 @@ namespace ExamService.Service.ExamQuestionService
                             IsSuccess = false,
                         };
                     }
-
-                    Exam ex = new Exam
+                    if (user.Id != classes.Teacher)
                     {
-                        Name = examQuestionDTO.Name,
-                        TypeId = typ.Id,
-                        ClassId = classes.Id,
-                        UserId = user.Id,
-                        NumberQuestion = examQuestionDTO.NumberQuestion,
-                        Status = false,
-                        createBy = user.Id,
-                        updateBy = user.Id,
-                        IsMutipleChoice = examQuestionDTO.IsMutipleChoice,
-                        DateBegin = DateTime.Now,
-                    };
-                    await _context.Exams.AddAsync(ex);
-                    var examId = ex.Id;
+                        return new ManagerRespone
+                        {
+                            Message = $"You don't have permission to create new exam",
+                            IsSuccess = false,
+                        };
+                    }
+                    
                     List<ExamQuestion> exams = new List<ExamQuestion>();
                     foreach (var q in examQuestionDTO.Questions)
                     {
@@ -72,6 +66,29 @@ namespace ExamService.Service.ExamQuestionService
                                 IsSuccess = false,
                             };
                         }
+                        if (question.ClassId != examQuestionDTO.Class)
+                        {
+                            return new ManagerRespone
+                            {
+                                Message = $"Question don't match with class in exam",
+                                IsSuccess = false,
+                            };
+                        }
+                        Exam ex = new Exam
+                        {
+                            Name = examQuestionDTO.Name,
+                            TypeId = typ.Id,
+                            ClassId = classes.Id,
+                            UserId = user.Id,
+                            NumberQuestion = examQuestionDTO.NumberQuestion,
+                            Status = false,
+                            createBy = user.Id,
+                            updateBy = user.Id,
+                            IsMutipleChoice = examQuestionDTO.IsMutipleChoice,
+                            DateBegin = DateTime.Now,
+                        };
+                        await _context.Exams.AddAsync(ex);
+                        var examId = ex.Id;
                         ExamQuestion examQuestion = new ExamQuestion
                         {
                             ExamId = examId,
@@ -130,6 +147,14 @@ namespace ExamService.Service.ExamQuestionService
                         return new ManagerRespone
                         {
                             Message = $"Don't exist exam with id={examQuestionDTO.Exam}",
+                            IsSuccess = false,
+                        };
+                    }
+                    if (user.Id != exam.createBy)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You don't have permission to delete this exam",
                             IsSuccess = false,
                         };
                     }
@@ -292,6 +317,14 @@ namespace ExamService.Service.ExamQuestionService
                             IsSuccess = false,
                         };
                     }
+                    if(user.Id!= examQuestion.createBy)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"You don't have permission to edit this exam question.",
+                            IsSuccess = false,
+                        };
+                    }
                     var typ = await _context.ExamsType.FirstOrDefaultAsync(t => t.Name == examQuestionDTO.Type);
                     if (typ == null)
                     {
@@ -389,17 +422,20 @@ namespace ExamService.Service.ExamQuestionService
                         {
                             return null;
                         }
-                        ExamQuestionUpdateDTO examQuestionDTO = new ExamQuestionUpdateDTO
+                        if (classes.Teacher == user.Id)
                         {
-                            Id = examQuestion.Id,
-                            Name = exam.Name,
-                            Class = classes.Name,
-                            Type = typ.Name,
-                            IsMutipleChoice = exam.IsMutipleChoice,
-                            NumberQuestion = exam.NumberQuestion,
-                            Questions = question.ContentQuestion
-                        };
-                        result.Add(examQuestionDTO);
+                            ExamQuestionUpdateDTO examQuestionDTO = new ExamQuestionUpdateDTO
+                            {
+                                Id = examQuestion.Id,
+                                Name = exam.Name,
+                                Class = classes.Name,
+                                Type = typ.Name,
+                                IsMutipleChoice = exam.IsMutipleChoice,
+                                NumberQuestion = exam.NumberQuestion,
+                                Questions = question.ContentQuestion
+                            };
+                            result.Add(examQuestionDTO);
+                        }
                     }
                     return result;
                 }
@@ -509,17 +545,20 @@ namespace ExamService.Service.ExamQuestionService
                     }
                     List<String> contentQuestion = new List<string>();
                     contentQuestion.Add(question.ContentQuestion);
-                    ExamQuestionDTO dto = new ExamQuestionDTO
+                    if (classes.Teacher == user.Id)
                     {
-                        Id = examsQuestion.Id,
-                        Name = exam.Name,
-                        Type = typ.Name,
-                        Class = classes.Name,
-                        IsMutipleChoice = exam.IsMutipleChoice,
-                        NumberQuestion = exam.NumberQuestion,
-                        Questions = contentQuestion
-                    };
-                    return dto;
+                        ExamQuestionDTO dto = new ExamQuestionDTO
+                        {
+                            Id = examsQuestion.Id,
+                            Name = exam.Name,
+                            Type = typ.Name,
+                            Class = classes.Name,
+                            IsMutipleChoice = exam.IsMutipleChoice,
+                            NumberQuestion = exam.NumberQuestion,
+                            Questions = contentQuestion
+                        };
+                        return dto;
+                    }
 
                 }
                 catch (Exception ex)
