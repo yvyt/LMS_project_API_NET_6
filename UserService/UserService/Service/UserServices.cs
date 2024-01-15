@@ -466,7 +466,6 @@ namespace UserService.Service
             };
 
         }
-
         public async Task<UserDTO> GetUserByToken(string token)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["AuthSettings:Key"]));

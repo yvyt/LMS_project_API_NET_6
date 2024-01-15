@@ -6,6 +6,7 @@ namespace CourseService.Service.LessonQuestionService
     {
         Task<ManagerRespone> AddLessonQuestion(LessonQuestionDTO questionDTO);
         Task<ManagerRespone> AddLessonQuestionFromTeacher(LessonQuestionFromTeacher questionDTO);
+        Task<List<LessonQuestionDetail>> GetQuestionByAnswer();
         Task<List<LessonQuestionDetail>> GetQuestionByTime();
     }
 }

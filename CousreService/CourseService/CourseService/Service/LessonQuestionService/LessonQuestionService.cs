@@ -219,5 +219,120 @@ namespace CourseService.Service.LessonQuestionService
                 IsSuccess = false,
             };
         }
+        public async Task<List<LessonQuestionDetail>> GetQuestionByTime()
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    List<LessonQuestionDetail> result = new List<LessonQuestionDetail>();
+                    var questions = _context.LessonQuestions.Where(x=>x.isFromTeacher==false).OrderByDescending(x=>x.createAt).ToList();
+                    if (questions == null)
+                    {
+                        return null;
+                    }
+                    foreach (var q in questions)
+                    {
+                        var lesson = await _context.Lessons.FirstOrDefaultAsync(x => x.Id == q.LessonId);
+                        if (lesson == null)
+                        {
+                            return null;
+                        };
+                        var topic = await _context.Topics.FirstOrDefaultAsync(x => x.Id == lesson.TopicId);
+                        if (topic == null)
+                        {
+                            return null;
+                        }
+                        var classes = await _context.Classes.FirstOrDefaultAsync(x => x.Id == topic.ClassId);
+                        if (classes == null)
+                        {
+                            return null;
+                        }
+                        UserDTO owner = await GetUsersFromUserServiceAsync(q.createBy, accessToken);
+                        if (user.Id == classes.Teacher)
+                        {
+                            
+                                LessonQuestionDetail qu = new LessonQuestionDetail
+                                {
+                                    Id = q.Id,
+                                    Lesson = lesson.Title,
+                                    Title = q.Title,
+                                    Content = q.ContentQuestion,
+                                    createAt = q.createAt.ToString(),
+                                    createBy = owner.UserName
+                                };
+                                result.Add(qu);
+                            
+                        }
+                    }
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    return null ;
+                }
+            }
+            return null;
+        }
+
+        public async Task<List<LessonQuestionDetail>> GetQuestionByAnswer()
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var user = _httpContextAccessor.HttpContext.Items["User"] as UserDTO; // user create 
+            if (user != null)
+            {
+                try
+                {
+                    List<LessonQuestionDetail> result = new List<LessonQuestionDetail>();
+                    var questions = _context.LessonQuestions.Where(x=>x.IsAnswer==false && x.isFromTeacher==false).ToList();
+                    if (questions == null)
+                    {
+                        return null;
+                    }
+                    foreach (var q in questions)
+                    {
+                        var lesson = await _context.Lessons.FirstOrDefaultAsync(x => x.Id == q.LessonId);
+                        if (lesson == null)
+                        {
+                            return null;
+                        };
+                        var topic = await _context.Topics.FirstOrDefaultAsync(x => x.Id == lesson.TopicId);
+                        if (topic == null)
+                        {
+                            return null;
+                        }
+                        var classes = await _context.Classes.FirstOrDefaultAsync(x => x.Id == topic.ClassId);
+                        if (classes == null)
+                        {
+                            return null;
+                        }
+                        UserDTO owner = await GetUsersFromUserServiceAsync(q.createBy, accessToken);
+                        if (user.Id == classes.Teacher)
+                        {
+                            
+                                LessonQuestionDetail qu = new LessonQuestionDetail
+                                {
+                                    Id = q.Id,
+                                    Lesson = lesson.Title,
+                                    Title = q.Title,
+                                    Content = q.ContentQuestion,
+                                    createAt = q.createAt.ToString(),
+                                    createBy = owner.UserName
+                                };
+                                result.Add(qu);
+                            
+                        }
+                    }
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+            }
+            return null;
+        }
     }
 }

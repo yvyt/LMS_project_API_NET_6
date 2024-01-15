@@ -13,7 +13,7 @@ namespace CourseService.Data
         public string Id { get; set; }
         [Required]
         public string LessonId {  get; set; }
-        public string TopicId {  get; set; }
+        public string? TopicId {  get; set; }
         [Required]
         public string Title { get; set; }
         [Required]
@@ -26,7 +26,8 @@ namespace CourseService.Data
         public DateTime createAt { get; set; } = DateTime.Now;
         [Required]
         public string createBy { get; set; }
-
+        [Required]
+        public bool isFromTeacher { get; set; } = false;
         public virtual Lesson Lesson { get; set; }
         public virtual ICollection<LessonAnswer> LessonAnswers { get; set; }
     }

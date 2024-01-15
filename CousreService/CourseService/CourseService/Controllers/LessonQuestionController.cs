@@ -1,4 +1,5 @@
-﻿using CourseService.Model;
+﻿using CourseService.Data;
+using CourseService.Model;
 using CourseService.Service.LessonQuestionService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -10,10 +11,12 @@ namespace CourseService.Controllers
     public class LessonQuestionController : ControllerBase
     {
         private ILessonQuestionService _service;
+        private CourseContext _context;
 
-        public LessonQuestionController(ILessonQuestionService service)
+        public LessonQuestionController(ILessonQuestionService service,CourseContext context)
         {
             _service = service;
+            _context = context;
         }
         [HttpPost("AddQuestionFromStudent")]
         [Authorize(AuthenticationSchemes = "Bearer",Roles ="Student")]
@@ -37,9 +40,8 @@ namespace CourseService.Controllers
             }
             return BadRequest(result);
         }
-        [HttpPost("AddQuestionFromTeacher")]
-        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Teacher")]
         [HttpGet("GetQuestionByTime")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Teacher")]
         public async Task<IActionResult> GetQuestionByTime()
         {
             var result = await _service.GetQuestionByTime();
@@ -48,6 +50,19 @@ namespace CourseService.Controllers
                 return Ok(result);
             }
             return BadRequest(result);
+
+        }
+        [HttpGet("GetQuestionByAnswer")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Teacher")]
+        public async Task<IActionResult> GetQuestionByAnswer()
+        {
+            var result = await _service.GetQuestionByAnswer();
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+
         }
     }
 }
