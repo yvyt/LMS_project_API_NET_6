@@ -19,7 +19,6 @@ namespace CourseService.Controllers
         [HttpPost("AddTopic")]
         [Authorize(AuthenticationSchemes = "Bearer")]
         [Authorize(Policy = "CreateTopic")]
-
         public async Task<IActionResult> AddTopic(TopicDTO topicDTO)
         {
             var result = await _topicService.AddTopic(topicDTO);

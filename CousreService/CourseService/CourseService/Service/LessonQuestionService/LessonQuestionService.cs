@@ -180,11 +180,12 @@ namespace CourseService.Service.LessonQuestionService
 
                     LessonQuestion q = new LessonQuestion
                     {
-                        TopicId=questionDTO.TopicId,
+                        TopicId = questionDTO.TopicId,
                         LessonId = questionDTO.LessonId,
                         Title = questionDTO.Title,
                         ContentQuestion = questionDTO.ContentQuestion,
-                        createBy = user.Id
+                        createBy = user.Id,
+                        isFromTeacher = true,
                     };
                     await _context.LessonQuestions.AddAsync(q);
                     int numberOfChanges = await _context.SaveChangesAsync();
