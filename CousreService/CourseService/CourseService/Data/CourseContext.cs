@@ -21,6 +21,8 @@ namespace CourseService.Data
         public DbSet<TypeFile> TypeFiles { get; set; }
         public DbSet<Documents> Documents { get; set; }
         public DbSet<Resources> Resources { get; set; }
+        public DbSet<LessonQuestion> LessonQuestions { get; set; }
+        public DbSet<LessonAnswer> LessonAnswers { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -59,6 +61,14 @@ namespace CourseService.Data
             modelBuilder.Entity<Resources>()
                       .HasOne(l => l.Document)
                       .WithOne(d => d.Resources);
+            modelBuilder.Entity<LessonQuestion>()
+                .HasOne(l => l.Lesson)
+                .WithMany(l => l.LessonQuestion)
+                .HasForeignKey(l =>l.LessonId);
+            modelBuilder.Entity<LessonAnswer>()
+                .HasOne(l => l.LessonQuestion)
+                .WithMany(q => q.LessonAnswers)
+                .HasForeignKey(l => l.LessonQuestionId);
             //SeedType(modelBuilder);
         }
 

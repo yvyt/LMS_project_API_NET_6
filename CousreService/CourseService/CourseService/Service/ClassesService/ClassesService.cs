@@ -391,18 +391,21 @@ namespace CourseService.Service.ClassesService
                         }
                         var (lesson, numberLesson) = await CountLesson(clazz.Id);
                         var (numberResource, numberResourceNotApp) = await CountResource(lesson, clazz.Id);
-                        ClassesDetails classDTO = new ClassesDetails
+                        if (user.Id == clazz.Teacher)
                         {
-                            Id = clazz.Id,
-                            Name = clazz.Name,
-                            Course = courseName.Name,
-                            Teacher = TeacherName.UserName,
-                            Description = clazz.Description,
-                            NumberOfLesson = numberLesson.ToString(),
-                            NumberOfResource = $"{numberResourceNotApp}/{numberResource}",
-                        };
-                       
-                        result.Add(classDTO);
+                            ClassesDetails classDTO = new ClassesDetails
+                            {
+                                Id = clazz.Id,
+                                Name = clazz.Name,
+                                Course = courseName.Name,
+                                Teacher = TeacherName.UserName,
+                                Description = clazz.Description,
+                                NumberOfLesson = numberLesson.ToString(),
+                                NumberOfResource = $"{numberResourceNotApp}/{numberResource}",
+                            };
+
+                            result.Add(classDTO);
+                        }
                     }
                     return result;
 

@@ -44,6 +44,7 @@ namespace CourseService.Data
         public virtual TypeFile TypeFile { get; set; }
         public virtual ICollection<Resources> Resources { get; set; }
 
+        public virtual ICollection<LessonQuestion> LessonQuestion { get; set; }
     }
 
 }

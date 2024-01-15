@@ -3,6 +3,7 @@ using CourseService.Service.ClassesService;
 using CourseService.Service.CoursesService;
 using CourseService.Service.DocumentService;
 using CourseService.Service.Extentions;
+using CourseService.Service.LessonQuestionService;
 using CourseService.Service.LessonService;
 using CourseService.Service.ResourceService;
 using CourseService.Service.StudentCourseService;
@@ -95,6 +96,8 @@ builder.Services.AddScoped<ILessonService,LessonService>();
 builder.Services.AddScoped<IDocumentService, DocumentServices>();
 builder.Services.AddScoped<IResourceService, ResourceService>();
 builder.Services.AddScoped<IStudentCourseService, StudentCourseService>();
+builder.Services.AddScoped<ILessonQuestionService, LessonQuestionService>();
+
 builder.Services.AddHttpClient<IUserServiceClient, UserServiceClient>();
 builder.Services.AddHttpContextAccessor();
 
