@@ -15,6 +15,6 @@ namespace UserService.Data
             [StringLength(100)]
             [Required]
             public string PermissionName { get; set; }
-            
+            public virtual ICollection<RolePermission> RolePermissions { get; set; }
         }
 }

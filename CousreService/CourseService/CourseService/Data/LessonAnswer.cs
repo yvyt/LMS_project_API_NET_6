@@ -23,6 +23,10 @@ namespace CourseService.Data
         public DateTime createAt { get; set; } = DateTime.Now;
         [Required]
         public DateTime updateAt { get; set; }= DateTime.Now;
+        [Required]
+
+        public bool isActive { get; set; } = true;
+
         public virtual LessonQuestion LessonQuestion { get; set; }
     }
 }

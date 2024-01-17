@@ -11,12 +11,10 @@ namespace CourseService.Controllers
     public class LessonQuestionController : ControllerBase
     {
         private ILessonQuestionService _service;
-        private CourseContext _context;
 
-        public LessonQuestionController(ILessonQuestionService service,CourseContext context)
+        public LessonQuestionController(ILessonQuestionService service)
         {
             _service = service;
-            _context = context;
         }
         [HttpPost("AddQuestionFromStudent")]
         [Authorize(AuthenticationSchemes = "Bearer",Roles ="Student")]
@@ -62,7 +60,61 @@ namespace CourseService.Controllers
                 return Ok(result);
             }
             return BadRequest(result);
-
+        }
+        [HttpPut("EditQuestion")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Teacher")]
+        public async Task<IActionResult> EditQuestionFromTeacher(string id,LessonQuestionFromTeacher questionDTO)
+        {
+            var result = await _service.EditQuestionFromTeacher(id,questionDTO);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpDelete("DeleteQuestion")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Teacher,Student")]
+        public async Task<IActionResult> DeleteQuestion(string id)
+        {
+            var result = await _service.DeleteQuestion(id);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpGet("GetActive")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Teacher,Student")]
+        public async Task<IActionResult> GetActive()
+        {
+            var result = await _service.GetActive();
+            if (result!=null)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpGet("GetByLesson")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Student")]
+        public async Task<IActionResult> GetByLesson(string lessonId)
+        {
+            var result = await _service.GetByLesson(lessonId);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        [HttpPut("LikeQuestion")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public async Task<IActionResult> LikeQuestion(string id)
+        {
+            var result = await _service.LikeQuestion(id);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
     }
 }

@@ -27,7 +27,15 @@ namespace CourseService.Data
         [Required]
         public string createBy { get; set; }
         [Required]
+        public DateTime updateAt { get; set; } = DateTime.Now;
+        [Required]
+        public string updateBy { get; set; }
+        [Required]
         public bool isFromTeacher { get; set; } = false;
+        [Required]
+
+        public bool isActive { get; set; } = true;
+
         public virtual Lesson Lesson { get; set; }
         public virtual ICollection<LessonAnswer> LessonAnswers { get; set; }
     }

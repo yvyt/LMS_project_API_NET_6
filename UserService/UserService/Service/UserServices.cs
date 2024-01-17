@@ -16,6 +16,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Web;
+using System.Xml;
 using UserService.Data;
 using UserService.Model;
 
@@ -29,10 +30,10 @@ namespace UserService.Service
         private readonly IMailServices _mailService;
         private SignInManager<IdentityUser> _signInManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
-
+        private readonly AppicationDbContext _context;
 
         public UserServices(UserManager<IdentityUser> userManager, IConfiguration config, RoleManager<IdentityRole> roleManager
-            , IMailServices mailServices, SignInManager<IdentityUser> signInManager, IHttpContextAccessor contextAccessor)
+            , IMailServices mailServices, SignInManager<IdentityUser> signInManager, IHttpContextAccessor contextAccessor, AppicationDbContext context)
         {
             _userManager = userManager;
             _config = config;
@@ -40,6 +41,7 @@ namespace UserService.Service
             _mailService = mailServices;
             _httpContextAccessor = contextAccessor;
             _signInManager = signInManager;
+            _context=context;
         }
 
         public async Task<UserManagerRespone> LoginAsync(LoginUser user)
@@ -75,90 +77,13 @@ namespace UserService.Service
                 foreach (var role in userRole)
                 {
                     authClaim.Add(new Claim(ClaimTypes.Role, role));
-                    if (role == "Leadership")
+                    var roles = await _roleManager.FindByNameAsync(role);
+
+                    var Rolepermissions = await _context.RolePermissions.Where(x => x.RoleId == roles.Id).ToListAsync();
+                    foreach(var permission in Rolepermissions)
                     {
-                        authClaim.Add(new Claim("Permission", "Create:Course"));
-                        authClaim.Add(new Claim("Permission", "Edit:Course"));
-                        authClaim.Add(new Claim("Permission", "Delete:Course"));
-                        authClaim.Add(new Claim("Permission", "View:Course"));
-
-                        authClaim.Add(new Claim("Permission", "Create:Class"));
-                        authClaim.Add(new Claim("Permission", "Edit:Class"));
-                        authClaim.Add(new Claim("Permission", "Delete:Class"));
-                        authClaim.Add(new Claim("Permission", "View:Class"));
-
-                        authClaim.Add(new Claim("Permission", "View:Topic"));
-                        authClaim.Add(new Claim("Permission", "View:Lesson"));
-                        authClaim.Add(new Claim("Permission", "View:ExamQuestion"));
-                        authClaim.Add(new Claim("Permission", "View:Question"));
-                        authClaim.Add(new Claim("Permission", "View:Answer"));
-
-                        authClaim.Add(new Claim("Permission", "Create:Resource"));
-                        authClaim.Add(new Claim("Permission", "Edit:Resource"));
-                        authClaim.Add(new Claim("Permission", "Delete:Resource"));
-                        authClaim.Add(new Claim("Permission", "View:Resource"));
-
-                        authClaim.Add(new Claim("Permission", "Create:Private File"));
-                        authClaim.Add(new Claim("Permission", "Edit:Private File"));
-                        authClaim.Add(new Claim("Permission", "Delete:Private File"));
-                        authClaim.Add(new Claim("Permission", "View:Private File"));
-
-                        authClaim.Add(new Claim("Permission", "Create:User"));
-                        authClaim.Add(new Claim("Permission", "Edit:User"));
-                        authClaim.Add(new Claim("Permission", "Delete:User"));
-                        authClaim.Add(new Claim("Permission", "View:User"));
-                    }
-                    if (role == "Teacher")
-                    {
-                        authClaim.Add(new Claim("Permission", "View:Class"));
-                        authClaim.Add(new Claim("Permission", "View:Course"));
-
-                        authClaim.Add(new Claim("Permission", "Create:Topic"));
-                        authClaim.Add(new Claim("Permission", "Edit:Topic"));
-                        authClaim.Add(new Claim("Permission", "Delete:Topic"));
-                        authClaim.Add(new Claim("Permission", "View:Topic"));
-
-                        authClaim.Add(new Claim("Permission", "Create:Lesson"));
-                        authClaim.Add(new Claim("Permission", "Edit:Lesson"));
-                        authClaim.Add(new Claim("Permission", "Delete:Lesson"));
-                        authClaim.Add(new Claim("Permission", "View:Lesson"));
-
-                        authClaim.Add(new Claim("Permission", "Create:Resource"));
-                        authClaim.Add(new Claim("Permission", "Edit:Resource"));
-                        authClaim.Add(new Claim("Permission", "Delete:Resource"));
-                        authClaim.Add(new Claim("Permission", "View:Resource"));
-
-                        authClaim.Add(new Claim("Permission", "Create:Exam"));
-                        authClaim.Add(new Claim("Permission", "Edit:Exam"));
-                        authClaim.Add(new Claim("Permission", "Delete:Exam"));
-                        authClaim.Add(new Claim("Permission", "View:Exam"));
-
-                        authClaim.Add(new Claim("Permission", "Create:ExamQuestion"));
-                        authClaim.Add(new Claim("Permission", "Edit:ExamQuestion"));
-                        authClaim.Add(new Claim("Permission", "Delete:ExamQuestion"));
-                        authClaim.Add(new Claim("Permission", "View:ExamQuestion"));
-
-                        authClaim.Add(new Claim("Permission", "Create:Question"));
-                        authClaim.Add(new Claim("Permission", "Edit:Question"));
-                        authClaim.Add(new Claim("Permission", "Delete:Question"));
-                        authClaim.Add(new Claim("Permission", "View:Question"));
-
-                        authClaim.Add(new Claim("Permission", "Create:Answer"));
-                        authClaim.Add(new Claim("Permission", "Edit:Answer"));
-                        authClaim.Add(new Claim("Permission", "Delete:Answer"));
-                        authClaim.Add(new Claim("Permission", "View:Answer"));
-
-                        authClaim.Add(new Claim("Permission", "View:User"));
-
-                    }
-                    if (role == "Student")
-                    {
-                        authClaim.Add(new Claim("Permission", "View:Course"));
-                        authClaim.Add(new Claim("Permission", "View:Class"));
-                        authClaim.Add(new Claim("Permission", "View:User"));
-                        authClaim.Add(new Claim("Permission", "View:Exam"));
-                        authClaim.Add(new Claim("Permission", "View:Topic"));
-                        authClaim.Add(new Claim("Permission", "View:Lesson"));
+                        var p = await _context.Permissions.FirstOrDefaultAsync(x => x.Id == permission.PermissionId);
+                        authClaim.Add(new Claim("Permission", p.PermissionName));
                     }
                 }
                 
@@ -514,6 +439,68 @@ namespace UserService.Service
             var principal = tokenHandler.ValidateToken(accessToken, tokenValidationParameters, out securityToken);
 
             return securityToken as JwtSecurityToken;
+        }
+
+        public async Task<UserManagerRespone> AddRole(RoleDTO roleDTO)
+        {
+            var checkRole = await _roleManager.RoleExistsAsync(roleDTO.RoleName);
+            if (!checkRole)
+            {
+                var identityRole = new IdentityRole
+                {
+                    Name=roleDTO.RoleName
+                };
+               
+                List<RolePermission> rolePermissions = new List<RolePermission>();
+                foreach(var p in roleDTO.Permissions)
+                {
+                    var checkPermission = await _context.Permissions.FirstOrDefaultAsync(px => px.Id == p);
+                    if (checkPermission == null)
+                    {
+                        return new UserManagerRespone
+                        {
+                            Message = $"Don't exist permission with id={p}",
+                            IsSuccess = false
+                        };
+                    }
+                    var rp = new RolePermission
+                    {
+                        RoleId=identityRole.Id,
+                        PermissionId=checkPermission.Id,
+                    };
+                    rolePermissions.Add(rp);
+                }
+                var result = await _roleManager.CreateAsync(identityRole);
+                if (!result.Succeeded)
+                {
+                    return new UserManagerRespone
+                    {
+                        Message = "User did not create",
+                        IsSuccess = false,
+                        Errors = result.Errors.Select(e => e.Description)
+                    };
+                }
+                await _context.RolePermissions.AddRangeAsync(rolePermissions);
+                var number = await _context.SaveChangesAsync();
+                if (number > 0)
+                {
+                    return new UserManagerRespone
+                    {
+                        Message="Successfully create new role with permission",
+                        IsSuccess=true,
+                    };
+                }
+                return new UserManagerRespone
+                {
+                    Message = "Error when create new role with permission",
+                    IsSuccess = false,
+                };
+            }
+            return new UserManagerRespone
+            {
+                Message = "This role is exist",
+                IsSuccess = false,
+            };
         }
     }
 }

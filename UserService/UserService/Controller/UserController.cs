@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using System.Data;
+using UserService.Data;
 using UserService.Model;
 using UserService.Service;
 
@@ -158,7 +160,23 @@ namespace UserService.Controller
             }
             return BadRequest("Something is not valid");
         }
+        [HttpPost("AddRole")]
+        [Authorize(AuthenticationSchemes = "Bearer",Roles ="Leadership")]
+        public async Task<IActionResult> CreateRole([FromForm] RoleDTO roleDTO)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _userService.AddRole(roleDTO);
+                if (result.IsSuccess)
+                {
+                    return Ok(result);
+                }
+
+                return BadRequest(result);
+            }
+            return BadRequest("Something is not valid");
+        }
     }
-  
+
 }
  
