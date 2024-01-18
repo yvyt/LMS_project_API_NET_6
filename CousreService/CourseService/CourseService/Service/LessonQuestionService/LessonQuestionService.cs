@@ -344,7 +344,7 @@ namespace CourseService.Service.LessonQuestionService
             {
                 try
                 {
-                    var lq= await _context.LessonQuestions.FirstOrDefaultAsync(x=>x.Id == id);
+                    var lq= await _context.LessonQuestions.FirstOrDefaultAsync(x=>x.Id == id && x.isFromTeacher==true);
                     if (lq == null)
                     {
                         {
@@ -393,11 +393,19 @@ namespace CourseService.Service.LessonQuestionService
                             IsSuccess = false,
                         };
                     }
-                    if (classes.Teacher != user.Id)
+                    if (user.Id != classes.Teacher)
                     {
                         return new ManagerRespone
                         {
-                            Message = $"You not teach in this class. Don't have permission to create question for this class",
+                            Message = $"Don't have permission to edit question for this class",
+                            IsSuccess = false,
+                        };
+                    }
+                    if (lq.createBy!= user.Id)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't have permission to edit question",
                             IsSuccess = false,
                         };
                     }
@@ -582,7 +590,7 @@ namespace CourseService.Service.LessonQuestionService
                 try
                 {
                     List<LessonQuestionDetail> result = new List<LessonQuestionDetail>();
-                    var questions = _context.LessonQuestions.Where(x => x.isActive == true && x.LessonId==lessonId && x.isFromTeacher==false).ToList();
+                    var questions = _context.LessonQuestions.Where(x => x.isActive == true && x.LessonId==lessonId).ToList();
                     if (questions == null)
                     {
                         return null;

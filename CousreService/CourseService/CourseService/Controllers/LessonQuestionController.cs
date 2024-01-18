@@ -106,7 +106,7 @@ namespace CourseService.Controllers
             return BadRequest(result);
         }
         [HttpPut("LikeQuestion")]
-        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(AuthenticationSchemes = "Bearer",Roles ="Teacher")]
         public async Task<IActionResult> LikeQuestion(string id)
         {
             var result = await _service.LikeQuestion(id);

@@ -186,7 +186,7 @@ namespace CourseService.Service.LessonAnswerService
             {
                 try
                 {
-                    var answer = await _context.LessonAnswers.Where(x => x.LessonQuestionId==questionId).ToListAsync();
+                    var answer = await _context.LessonAnswers.Where(x => x.LessonQuestionId==questionId && x.isActive==true).ToListAsync();
                     List<LessonAnswerDetail> result = new List<LessonAnswerDetail>();
                     foreach(var a in answer)
                     {
@@ -279,10 +279,19 @@ namespace CourseService.Service.LessonAnswerService
                     {
                         return new ManagerRespone
                         {
-                            Message = $"Don't have permission to edit question for this class",
+                            Message = $"Don't have permission to edit answer for this class",
                             IsSuccess = false,
                         };
                     }
+                    if (user.Id !=classes.Teacher)
+                    {
+                        return new ManagerRespone
+                        {
+                            Message = $"Don't have permission to edit answer for this class",
+                            IsSuccess = false,
+                        };
+                    }
+                
                     answer.updateAt = DateTime.Now;
                     answer.updateBy = user.Id;
                     answer.LessonQuestionId = answerDTO.LessonQuestionId;
@@ -343,7 +352,7 @@ namespace CourseService.Service.LessonAnswerService
                     {
                         return new ManagerRespone
                         {
-                            Message = $"Don't have permission to edit question for this class",
+                            Message = $"Don't have permission to delete question for this class",
                             IsSuccess = false,
                         };
                     }

@@ -78,7 +78,6 @@ namespace UserService.Service
                 {
                     authClaim.Add(new Claim(ClaimTypes.Role, role));
                     var roles = await _roleManager.FindByNameAsync(role);
-
                     var Rolepermissions = await _context.RolePermissions.Where(x => x.RoleId == roles.Id).ToListAsync();
                     foreach(var permission in Rolepermissions)
                     {
