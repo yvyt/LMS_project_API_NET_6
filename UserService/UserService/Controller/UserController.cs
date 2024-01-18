@@ -176,6 +176,28 @@ namespace UserService.Controller
             }
             return BadRequest("Something is not valid");
         }
+        [HttpGet("GetUserRolePermission")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Leadership")]
+        public async Task<IActionResult> GetUserRolePermission(string id)
+        {
+            var result = await _userService.GetRolePermission(id);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return BadRequest();
+        }
+        [HttpPut("EditRolePermission")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Leadership")]
+        public async Task<IActionResult> EditRolePermission(string id,[FromForm] RoleDTO dto)
+        {
+            var result = await _userService.EditRolePermission(id,dto);
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            return BadRequest();
+        }
     }
 
 }

@@ -502,5 +502,82 @@ namespace UserService.Service
                 IsSuccess = false,
             };
         }
+
+        public async Task<RoleDetail> GetRolePermission(string id)
+        {
+            var role = await _roleManager.FindByIdAsync(id);
+            if (role == null)
+            {
+                return null;
+            }
+            var rolePermission = await _context.RolePermissions.Where(x=>x.RoleId==role.Id).ToListAsync();
+            List<string> permis = new List<string>();
+            var rol = new RoleDetail
+            {
+                RoleId=role.Id,
+                RoleName = role.Name,
+            };
+            foreach (var r in rolePermission)
+            {                
+                var permission = await _context.Permissions.FirstOrDefaultAsync(x => x.Id == r.PermissionId);
+                if(permission != null) {
+                    permis.Add(permission.PermissionName);
+                }
+                rol.Permissions= permis;
+            }
+            return rol;
+        }
+
+        public async Task<UserManagerRespone> EditRolePermission(string id,RoleDTO dto)
+        {
+            var role = await _roleManager.FindByIdAsync(id);
+            if (role == null)
+            {
+                return new UserManagerRespone
+                {
+                    Message=$"Don't exist role with id={id}",
+                    IsSuccess=false
+                };
+            }
+            role.Name = dto.RoleName;
+            await _roleManager.UpdateAsync(role);
+            var rolePermission = await _context.RolePermissions.Where(x => x.RoleId == role.Id).ToListAsync();
+            _context.RolePermissions.RemoveRange(rolePermission);
+            List<RolePermission> rolePermissions = new List<RolePermission>();
+            foreach (var p in dto.Permissions)
+            {
+                var checkPermission = await _context.Permissions.FirstOrDefaultAsync(px => px.Id == p);
+                if (checkPermission == null)
+                {
+                    return new UserManagerRespone
+                    {
+                        Message = $"Don't exist permission with id={p}",
+                        IsSuccess = false
+                    };
+                }
+                var rp = new RolePermission
+                {
+                    RoleId = role.Id,
+                    PermissionId = checkPermission.Id,
+                };
+                rolePermissions.Add(rp);
+            }
+            await _context.RolePermissions.AddRangeAsync(rolePermissions);
+            var number = await _context.SaveChangesAsync();
+            if (number > 0)
+            {
+                return new UserManagerRespone
+                {
+                    Message = "Successfully update role with permission",
+                    IsSuccess = true,
+                };
+            }
+            return new UserManagerRespone
+            {
+                Message = "Error when update role with permission",
+                IsSuccess = false,
+            };
+
+        }
     }
 }

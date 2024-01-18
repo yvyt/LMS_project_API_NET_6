@@ -18,6 +18,8 @@ namespace UserService.Service
         Task<UserDTO> GetUserByToken (string token);
         Task<UserManagerRespone> LogOut();
         Task<UserManagerRespone> AddRole(RoleDTO roleDTO);
+        Task<RoleDetail> GetRolePermission(string id);
+        Task<UserManagerRespone> EditRolePermission(string id, RoleDTO dto);
     }
     
     

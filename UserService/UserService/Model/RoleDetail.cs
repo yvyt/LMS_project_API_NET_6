@@ -6,6 +6,6 @@ namespace UserService.Model
     {
         public string RoleId { get; set; }
         public string RoleName { get; set; }
-        public List<RolePermission> Permissions { get; set; }
+        public List<string> Permissions { get; set; }
     }
 }
