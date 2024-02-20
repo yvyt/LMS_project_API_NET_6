@@ -575,16 +575,13 @@ namespace CourseService.Service.ResourceService
                     var fileName = document.FileName;
                     if (string.IsNullOrEmpty(fileName))
                     {
-                        // You might want to customize the error handling
                         return (null, $"File Name is Empty");
                     }
 
-                    // Get the filePath
                     var filePath = Path.Combine(Directory.GetCurrentDirectory(), document.link);
 
                     if (!File.Exists(filePath))
                     {
-                        // You might want to customize the error handling
                         return (null, $"File not found: {fileName}");
                     }
                     return (System.IO.File.OpenRead(filePath), document.FileName);
